@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "esra-agents",
+  "displayName": "ESRA Agents for Claude Code",
+  "version": "0.1.0",
+  "description": "Five portable ESRA skills with a dependency-free local runtime and privacy-preserving Claude Code hooks.",
+  "author": {
+    "name": "Robert Pauls",
+    "url": "https://github.com/rrpauls"
+  },
+  "homepage": "https://github.com/rrpauls/esra-agents",
+  "repository": "https://github.com/rrpauls/esra-agents",
+  "license": "Apache-2.0",
+  "keywords": ["esra", "claude-code", "agent-skills", "experiments"],
+  "metadata": {
+    "esraProtocolVersion": "1.2",
+    "conformanceManifest": "./esra-conformance.json",
+    "specification": "https://github.com/rrpauls/esra"
+  }
+}

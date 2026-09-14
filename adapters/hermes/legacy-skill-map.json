@@ -1,0 +1,11 @@
+{
+  "hermes-evolution-orchestrator": "esra-orchestrator",
+  "ooda-framework": "esra-decisions",
+  "value-clarifier": "esra-decisions",
+  "experimenter": "esra-experiments",
+  "self-observer": "esra-reflection",
+  "mental-model-updater": "esra-reflection",
+  "loop-auditor": "esra-reflection",
+  "crisis-manager": "esra-crisis",
+  "antifragility-builder": "esra-crisis"
+}

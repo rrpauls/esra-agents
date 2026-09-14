@@ -1,0 +1,9 @@
+{
+  "host": "hermes",
+  "default_home": "~/.hermes",
+  "skills_path": "skills/esra",
+  "runtime_path": "esra/runtime",
+  "conformance_path": "esra/conformance.json",
+  "legacy_skill_map": "legacy-skill-map.json",
+  "native_lifecycle_hook": false
+}

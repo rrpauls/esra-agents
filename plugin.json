@@ -1,0 +1,33 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "esra-agents",
+  "version": "0.1.0",
+  "description": "Portable, evidence-driven ESRA workflows with adapters for OpenAI, Claude Code, and Hermes Agent.",
+  "author": {
+    "name": "Robert Pauls",
+    "url": "https://github.com/rrpauls"
+  },
+  "homepage": "https://github.com/rrpauls/esra-agents",
+  "repository": "https://github.com/rrpauls/esra-agents",
+  "license": "Apache-2.0",
+  "keywords": ["esra", "agent-skills", "codex", "chatgpt", "claude-code", "hermes"],
+  "extensions": {
+    "com.openai": {
+      "hooks": "./adapters/openai/hooks.json",
+      "interface": {
+        "displayName": "ESRA Agents",
+        "shortDescription": "Bounded improvement workflows across agent hosts",
+        "longDescription": "Five portable ESRA skills plus a local privacy-preserving runtime and thin host adapters.",
+        "developerName": "Robert Pauls",
+        "category": "Developer Tools",
+        "capabilities": ["Analysis", "Local automation"],
+        "websiteURL": "https://github.com/rrpauls/esra-agents",
+        "defaultPrompt": [
+          "Review this major change with one bounded ESRA cycle.",
+          "Design a reversible experiment for this improvement.",
+          "Audit my recorded ESRA cycles for recurring problems."
+        ]
+      }
+    }
+  }
+}

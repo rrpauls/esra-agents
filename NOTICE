@@ -1,0 +1,13 @@
+ESRA Agents
+Copyright 2026 Robert Pauls
+
+This product includes material adapted from the ESRA specification and the
+earlier Hermes, ChatGPT/Codex, and Claude Code ESRA implementations:
+https://github.com/rrpauls/esra
+https://github.com/rrpauls/hermes-esra
+https://github.com/rrpauls/chatgpt-esra
+https://github.com/rrpauls/claude-esra
+
+OpenAI, ChatGPT, Codex, Claude, and Hermes Agent are trademarks of their
+respective owners. This independent integration is not endorsed or sponsored
+by those owners.

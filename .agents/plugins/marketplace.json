@@ -1,0 +1,21 @@
+{
+  "name": "esra-agents",
+  "interface": {
+    "displayName": "ESRA Agents"
+  },
+  "plugins": [
+    {
+      "name": "esra-agents",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/rrpauls/esra-agents.git",
+        "ref": "v0.1.0"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "esra-agents",
+  "version": "0.1.0",
+  "description": "Portable evidence-driven ESRA workflows and local runtime.",
+  "author": {
+    "name": "Robert Pauls",
+    "url": "https://github.com/rrpauls"
+  },
+  "homepage": "https://github.com/rrpauls/esra-agents",
+  "repository": "https://github.com/rrpauls/esra-agents",
+  "license": "Apache-2.0",
+  "keywords": ["esra", "codex", "agent-skills", "experiments"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ESRA Agents",
+    "shortDescription": "Bounded evidence-driven improvement workflows",
+    "longDescription": "Five portable ESRA skills plus a privacy-preserving runtime and Codex lifecycle adapter.",
+    "developerName": "Robert Pauls",
+    "category": "Developer Tools",
+    "capabilities": ["Analysis", "Local automation"],
+    "websiteURL": "https://github.com/rrpauls/esra-agents",
+    "defaultPrompt": "Review this major change with one bounded ESRA cycle."
+  }
+}

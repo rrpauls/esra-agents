@@ -1,0 +1,39 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile Python
+        run: python3 -m py_compile runtime/*.py scripts/*.py tests/*.py
+      - name: Validate skills and manifests
+        run: |
+          python3 scripts/validate_skills.py
+          python3 scripts/validate_plugin.py
+      - name: Run unit tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Build and validate distributions
+        run: |
+          python3 scripts/build_distributions.py
+          python3 scripts/validate_distributions.py dist
+      - name: Upload release candidates
+        uses: actions/upload-artifact@v4
+        with:
+          name: esra-agents-distributions
+          path: |
+            dist/*.zip
+            dist/SHA256SUMS

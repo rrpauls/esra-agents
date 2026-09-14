@@ -1,0 +1,34 @@
+{
+  "implementation": "esra-agents",
+  "implementation_version": "0.1.0",
+  "protocol_version": "1.2",
+  "runtime": "OpenAI, Claude Code, and Hermes Agent adapters",
+  "capabilities": {
+    "cycle_review": {
+      "status": "implemented",
+      "evidence": ["skills/esra-orchestrator/SKILL.md", "tests/test_skills.py"]
+    },
+    "evidence_logging": {
+      "status": "verified",
+      "evidence": ["runtime/esra_runtime.py", "tests/test_runtime.py"]
+    },
+    "experiment_execution": {
+      "status": "verified",
+      "evidence": ["runtime/esra_runtime.py", "tests/test_runtime.py"]
+    },
+    "lifecycle_event_recording": {
+      "status": "verified",
+      "evidence": ["runtime/esra_hook.py", "tests/test_adapters.py"],
+      "notes": "Adapter contract verification only; native host behavior remains host-pilot gated."
+    },
+    "portable_cycle_event_export": {
+      "status": "verified",
+      "evidence": ["runtime/esra_export.py", "tests/test_export.py"]
+    },
+    "automatic_cycle_execution": {
+      "status": "not-applicable",
+      "evidence": ["README.md#operational-boundaries"],
+      "notes": "Adapters observe or recommend but never start an ESRA cycle."
+    }
+  }
+}
