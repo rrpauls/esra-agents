@@ -4,11 +4,11 @@ Use a tagged release for reproducibility. Verify `SHA256SUMS` before installing.
 
 ## OpenClaw 2026.9.1
 
-Install the v0.2.1 prerelease from GitHub, explicitly enable it, grant the
+Install the v0.2.2 prerelease from GitHub, explicitly enable it, grant the
 read-only `agent_end` hook access, and restart the Gateway:
 
 ```bash
-openclaw plugins install --force --accept-capabilities git:github.com/rrpauls/esra-agents@v0.2.1
+openclaw plugins install --force --accept-capabilities git:github.com/rrpauls/esra-agents@v0.2.2
 openclaw plugins enable --accept-capabilities esra-agents
 openclaw config set plugins.entries.esra-agents.hooks.allowConversationAccess true
 openclaw gateway restart
