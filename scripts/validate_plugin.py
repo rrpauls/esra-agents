@@ -33,8 +33,8 @@ def validate() -> list[str]:
     entry = marketplace.get("plugins", [{}])[0]
     if marketplace.get("name") != "esra-agents" or entry.get("name") != "esra-agents":
         errors.append("repository marketplace must publish esra-agents")
-    if entry.get("source", {}).get("ref") != "v0.2.0":
-        errors.append("repository marketplace must retain the latest released tag v0.2.0 until the Hermes gate passes")
+    if entry.get("source", {}).get("ref") != "v0.2.1":
+        errors.append("repository marketplace must retain the latest released tag v0.2.1 until the Hermes gate passes")
     extension = portable.get("extensions", {}).get("com.openai", {})
     hook_path = str(extension.get("hooks", "")).removeprefix("./")
     if not hook_path or not (ROOT / hook_path).is_file():

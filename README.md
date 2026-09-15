@@ -33,7 +33,7 @@ repository content remain human-approved proposals. Hooks persist only
 allowlisted metadata and hashes; prompts, transcripts, tool arguments/results,
 secrets, and raw run identifiers are excluded.
 
-OpenClaw has a native TypeScript adapter at v0.2.0. Hermes has a native Python
+OpenClaw has a native TypeScript adapter at v0.2.1. Hermes has a native Python
 plugin at v0.3.0. Stable autonomous capability remains gated by the shared host
 gate and seven-day soak; a prerelease or passing package test is not that claim.
 

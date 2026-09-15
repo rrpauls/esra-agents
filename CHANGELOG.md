@@ -7,6 +7,11 @@
   `hermes esra` CLI, and a constrained controller tool.
 - Apply approved candidates through Hermes `skill_manage` with a one-time token.
 
+## 0.2.1 — 2026-09-15 (prerelease)
+
+- Add the compiled JavaScript entry required for remote OpenClaw Git installs.
+- Mark the host `openclaw` peer dependency optional to avoid a nested host install.
+
 ## 0.2.0 — 2026-09-15 (prerelease)
 
 - Add the guarded autonomous controller, explicit state machine, daily budgets,

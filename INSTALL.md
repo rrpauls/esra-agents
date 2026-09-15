@@ -4,11 +4,11 @@ Use a tagged release for reproducibility. Verify `SHA256SUMS` before installing.
 
 ## OpenClaw 2026.9.1
 
-Install the v0.2.0 prerelease from GitHub, explicitly enable it, grant the
+Install the v0.2.1 prerelease from GitHub, explicitly enable it, grant the
 read-only `agent_end` hook access, and restart the Gateway:
 
 ```bash
-openclaw plugins install --accept-capabilities git:github.com/rrpauls/esra-agents@v0.2.0
+openclaw plugins install --force --accept-capabilities git:github.com/rrpauls/esra-agents@v0.2.1
 openclaw plugins enable --accept-capabilities esra-agents
 openclaw config set plugins.entries.esra-agents.hooks.allowConversationAccess true
 openclaw gateway restart
@@ -18,6 +18,7 @@ openclaw plugins inspect esra-agents --runtime --json
 The plugin ignores the messages carried by `agent_end`; OpenClaw nevertheless
 requires explicit conversation-access consent for every non-bundled subscriber
 to that event. Omit that consent to run the remaining six sanitized hooks.
+`--force` acknowledges that the Git source is outside ClawHub trust metadata.
 
 Create a separate Gateway identity with `operator.admin` for the controller
 that invokes `skills.proposals.apply`; do not grant that scope to the ordinary

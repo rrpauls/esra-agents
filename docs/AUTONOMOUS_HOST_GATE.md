@@ -17,6 +17,6 @@ All host checks use isolated temporary state roots. Existing OpenClaw and Hermes
 | ESRA activity cannot trigger another cycle | Passed | Passed | Passed |
 | Restart does not duplicate an interrupted apply | Passed | Passed by receipt-recovery test | Passed by shared receipt-recovery test |
 
-OpenClaw runtime evidence observed in an isolated `OPENCLAW_STATE_DIR`: seven registered native hooks, clean runtime inspection, a scanner-blocked protected candidate, a scanner-clean candidate, exact authenticated apply, one-time authorization rejection on reuse, and canary rollback to an absent snapshot.
+OpenClaw runtime evidence observed in an isolated `OPENCLAW_STATE_DIR`: exact `v0.2.1` Git installation, compiled JavaScript loading, seven registered native hooks, clean runtime inspection, a scanner-blocked protected candidate, a scanner-clean candidate, exact authenticated apply, one-time authorization rejection on reuse, and canary rollback to an absent snapshot.
 
 Hermes runtime evidence observed in an isolated `HERMES_HOME`: native plugin doctor passed with one tool and four hooks; five skills registered; nightly and event jobs were stored with only `esra` and `skills` toolsets; the event job reached the scheduler. The fresh agent run stopped because the isolated profile intentionally had no model or credentials. Therefore Hermes `v0.3.0` is not released yet.
