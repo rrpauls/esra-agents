@@ -2,9 +2,10 @@ import json
 import os
 import tempfile
 import unittest
+from datetime import timedelta
 from pathlib import Path
 
-from runtime.esra_controller import Controller, digest, redact_excerpts
+from runtime.esra_controller import Controller, atomic_json, digest, now, redact_excerpts
 
 
 SKILL_V1 = """---
@@ -244,6 +245,24 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual("promote", recovered["action"])
         self.assertEqual("interrupted promotion receipt recovered", recovered["reason"])
         self.assertEqual(SKILL_V2, (self.skills / "helper" / "SKILL.md").read_text(encoding="utf-8"))
+
+    def test_terminal_candidate_content_expires_but_hash_receipts_remain(self):
+        candidate = self.proposal()
+        self.controller.evaluate("candidate-1", passing_evaluation(candidate["revision_hash"]))
+        self.controller.promote("candidate-1", candidate["revision_hash"], "promote-expiring")
+        self.controller.rollback("candidate-1", "rollback-expiring")
+        receipt_count = len([
+            row for row in self.controller.receipts_path.read_text(encoding="utf-8").splitlines() if row
+        ])
+        terminal = self.controller.load_candidate("candidate-1")
+        terminal["updated_at"] = (now() - timedelta(days=31)).isoformat(timespec="seconds")
+        atomic_json(self.controller.candidate_path("candidate-1"), terminal)
+        self.controller.prune()
+        self.assertFalse(self.controller.candidate_path("candidate-1").exists())
+        self.assertFalse((self.state / "snapshots" / "candidate-1").exists())
+        self.assertEqual(receipt_count, len([
+            row for row in self.controller.receipts_path.read_text(encoding="utf-8").splitlines() if row
+        ]))
 
     def test_symlinked_live_skill_is_never_promoted(self):
         real = self.root / "real"

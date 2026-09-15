@@ -29,4 +29,4 @@ evaluated controller revision and the host revision.
 Operational events and budget records expire after 30 days. Promotion and
 rollback receipts retain hashes, conclusions, and local evidence pointers.
 Candidate content is local controller state and never transmitted by lifecycle
-hooks.
+hooks; terminal candidate content and snapshots are purged after 30 days.

@@ -417,6 +417,23 @@ class Controller:
             finally:
                 if os.path.exists(temporary):
                     os.unlink(temporary)
+        tokens = {
+            key: value for key, value in read_json(self.tokens_path, {}).items()
+            if isinstance(value, dict) and parse_time(value["expires_at"]) >= now()
+        }
+        atomic_json(self.tokens_path, tokens)
+        terminal = {"accepted", "rolled-back", "rejected", "quarantined"}
+        for candidate_path in sorted((self.state / "candidates").glob("*.json")):
+            candidate = read_json(candidate_path)
+            if candidate.get("state") not in terminal or parse_time(candidate["updated_at"]) >= cutoff:
+                continue
+            snapshot_root = self.state / "snapshots" / candidate_path.stem
+            if snapshot_root.exists():
+                for path in sorted(snapshot_root.rglob("*"), reverse=True):
+                    path.chmod(0o700 if path.is_dir() else 0o600)
+                snapshot_root.chmod(0o700)
+                shutil.rmtree(snapshot_root)
+            candidate_path.unlink()
 
     def tick(self, agent_id: str, nightly: bool = False) -> dict[str, Any]:
         agent_hash = self.agent_hash(agent_id)
