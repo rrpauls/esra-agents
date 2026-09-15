@@ -1,8 +1,8 @@
 {
   "implementation": "esra-agents",
-  "implementation_version": "0.2.0",
+  "implementation_version": "0.3.0",
   "protocol_version": "1.2",
-  "runtime": "OpenAI, Claude Code, and Hermes Agent adapters",
+  "runtime": "OpenAI, Claude Code, OpenClaw 2026.9.1, and Hermes Agent 0.21 adapters",
   "capabilities": {
     "cycle_review": {
       "status": "implemented",
@@ -18,17 +18,32 @@
     },
     "lifecycle_event_recording": {
       "status": "verified",
-      "evidence": ["runtime/esra_hook.py", "tests/test_adapters.py"],
-      "notes": "Adapter contract verification only; native host behavior remains host-pilot gated."
+      "evidence": ["runtime/esra_hook.py", "tests/test_adapters.py", "tests/test_openclaw_plugin.py", "tests/test_hermes_plugin.py"],
+      "notes": "Native import/registration was observed in isolated OpenClaw 2026.9.1 and Hermes 0.21 profiles; stable soak remains open."
     },
     "portable_cycle_event_export": {
       "status": "verified",
       "evidence": ["runtime/esra_export.py", "tests/test_export.py"]
     },
     "automatic_cycle_execution": {
-      "status": "not-applicable",
-      "evidence": ["README.md#operational-boundaries"],
-      "notes": "Adapters observe or recommend but never start an ESRA cycle."
+      "status": "implemented",
+      "evidence": ["runtime/esra_controller.py", "tests/test_controller.py", "adapters/hermes/plugin/review_wakeup.py"],
+      "notes": "Guarded review queue and cron integration are implemented; prerelease host gates and seven-day stable soak remain required."
+    },
+    "guarded_skill_promotion": {
+      "status": "verified",
+      "evidence": ["runtime/esra_controller.py", "tests/test_controller.py", "tests/test_hermes_plugin.py", "docs/AUTONOMOUS_HOST_GATE.md"],
+      "notes": "Verified in isolated filesystems with exact-revision tokens, snapshot, canary, and rollback. Canonical repositories and protected targets remain human-only."
+    },
+    "openclaw_native_plugin": {
+      "status": "verified",
+      "evidence": ["openclaw.plugin.json", "adapters/openclaw/src/index.ts", "tests/test_openclaw_plugin.py", "docs/AUTONOMOUS_HOST_GATE.md"],
+      "notes": "Seven typed hooks load under OpenClaw 2026.9.1 after explicit conversation-access consent."
+    },
+    "hermes_native_plugin": {
+      "status": "implemented",
+      "evidence": ["adapters/hermes/plugin/plugin.yaml", "adapters/hermes/plugin/__init__.py", "tests/test_hermes_plugin.py"],
+      "notes": "Hermes 0.21 plugin doctor observed one tool and four hooks; model-backed cron runs remain a release gate."
     }
   }
 }

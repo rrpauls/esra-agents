@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "esra-agents",
   "displayName": "ESRA Agents for Claude Code",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Five portable ESRA skills with a dependency-free local runtime and privacy-preserving Claude Code hooks.",
   "author": {
     "name": "Robert Pauls",

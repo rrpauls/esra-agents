@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 type JsonObject = Record<string, unknown>;
 
-const PLUGIN_VERSION = "0.2.0";
+const PLUGIN_VERSION = "0.3.0";
 const CONTROLLER = resolve(dirname(fileURLToPath(import.meta.url)), "../../../runtime/esra_controller.py");
 const FORBIDDEN = /(?:https?:\/\/|requires_env|api[_-]?key|credential|authorization:|install[_ -]?hook|rm\s+-rf|mkfs\b|shutdown\b|curl\b.*\|\s*(?:sh|bash)|wget\b.*\|\s*(?:sh|bash))/i;
 const PROTECTED = /^(?:esra-|controller|evaluator|value|safety)/i;

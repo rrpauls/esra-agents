@@ -28,8 +28,11 @@ EXPECTED = {
     },
     "esra-agents-hermes.zip": {
         "esra-agents-hermes/install.sh",
-        "esra-agents-hermes/adapters/openai/hooks.json",
+        "esra-agents-hermes/plugin.yaml",
+        "esra-agents-hermes/__init__.py",
+        "esra-agents-hermes/review_wakeup.py",
         "esra-agents-hermes/adapters/hermes/adapter.json",
+        "esra-agents-hermes/runtime/esra_controller.py",
         "esra-agents-hermes/runtime/esra_runtime.py",
     },
     "esra-agents-openclaw.zip": {
@@ -90,7 +93,7 @@ def main() -> int:
         print(f"ERROR: {error}")
     if errors:
         return 1
-    print("Validated deterministic OpenAI, Claude, and Hermes distributions")
+    print("Validated deterministic OpenAI, Claude, Hermes, and OpenClaw distributions")
     return 0
 
 

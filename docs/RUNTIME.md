@@ -36,3 +36,25 @@ the caller. No command starts an ESRA reasoning cycle or promotes a change.
 Experiments require a hypothesis, guardrail, rollback, alignment score, and
 explicit `experiment run`. Output content is represented only by digests in the
 experiment record.
+
+## Autonomous controller
+
+`runtime/esra_controller.py` is a separate guarded state machine. Its commands
+are `ingest`, `tick`, `next-review`, `complete-review`, `propose`, `evaluate`, `issue-token`, `consume-token`,
+`promote`, `rollback`, `status`, `audit`, `pause`, and `resume`.
+
+```bash
+python3 runtime/esra_controller.py --state-dir /private/path/esra status
+python3 runtime/esra_controller.py --state-dir /private/path/esra tick \
+  --agent local-agent --nightly
+```
+
+`evaluate` accepts host-produced deterministic, alignment, replay, and blind
+judge evidence for the exact revision. It requires at least three replay rows,
+at least two candidate wins, no critical regression, and no proposal rationale
+visible to the judge. It records `inconclusive` for a tie or insufficient
+evidence. The controller never treats its own confidence as evaluation.
+
+Direct `promote` is for a private agent-owned skill root. Native adapters use a
+host workflow: snapshot first, then Skill Workshop or `skill_manage`, then
+record activation only if the live text tree hashes to the evaluated revision.

@@ -1,6 +1,6 @@
 {
   "name": "@rrpauls/esra-agents",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Guarded autonomous ESRA controller and OpenClaw adapter",
   "type": "module",
   "license": "Apache-2.0",

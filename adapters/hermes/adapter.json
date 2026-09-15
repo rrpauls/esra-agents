@@ -1,9 +1,12 @@
 {
   "host": "hermes",
   "default_home": "~/.hermes",
-  "skills_path": "skills/esra",
-  "runtime_path": "esra/runtime",
-  "conformance_path": "esra/conformance.json",
+  "plugin_path": "plugins/esra-agents",
+  "skills_registration": "ctx.register_skill",
+  "runtime_path": "plugins/esra-agents/runtime",
+  "conformance_path": "plugins/esra-agents/esra-conformance.json",
   "legacy_skill_map": "legacy-skill-map.json",
-  "native_lifecycle_hook": false
+  "native_lifecycle_hook": true,
+  "minimum_host_version": "0.21.0",
+  "hooks": ["post_tool_call", "post_llm_call", "on_session_end", "on_skill_lifecycle"]
 }

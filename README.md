@@ -1,7 +1,7 @@
 # ESRA Agents
 
-Portable ESRA 1.2 skills and a shared local runtime for ChatGPT/Codex, Claude
-Code, and Hermes Agent.
+Portable ESRA 1.2 skills and a guarded evolutionary self-correction controller
+for chat-scoped and autonomous agents.
 
 This repository is the canonical implementation source for five selective ESRA
 skills, evidence records, bounded experiments, audits, portable export, and thin
@@ -11,7 +11,7 @@ https://github.com/rrpauls/esra.
 ## Design
 
 - One open Agent Skills tree for every supported host.
-- One dependency-free runtime and portable exporter.
+- One dependency-free runtime, portable exporter, and guarded autonomous controller.
 - Host-specific manifests, lifecycle event mappings, paths, and installers live
   only under `adapters/` and generated distributions.
 - Routine work bypasses ESRA; focused skills work independently; a major change
@@ -20,16 +20,26 @@ https://github.com/rrpauls/esra.
 See [Architecture](docs/ARCHITECTURE.md), [runtime commands](docs/RUNTIME.md),
 and [installation](INSTALL.md).
 
-## Operational boundaries
+## Autonomous loop
 
-ESRA Agents does not modify model weights, run as an autonomous background
-service, start improvement cycles from hooks, promote skill changes, or mutate
-host configuration automatically. Hooks record only allowlisted lifecycle
-metadata and discard prompt, transcript, tool input/output, secret, and raw
-session content.
+The autonomous profile implements:
 
-Package validation is not native-host validation. Capability claims remain
-gated by the host pilot defined in `rrpauls/esra`.
+`observation → trigger → proposal → alignment → experiment → blind evaluation → local promotion → canary/rollback`
+
+Guarded mode can promote only an exact evaluated revision of a local,
+agent-owned, text-only skill. ESRA core, controller/evaluator code, values,
+safety rules, credentials, runtime code, host configuration, and canonical
+repository content remain human-approved proposals. Hooks persist only
+allowlisted metadata and hashes; prompts, transcripts, tool arguments/results,
+secrets, and raw run identifiers are excluded.
+
+OpenClaw has a native TypeScript adapter at v0.2.0. Hermes has a native Python
+plugin at v0.3.0. Stable autonomous capability remains gated by the shared host
+gate and seven-day soak; a prerelease or passing package test is not that claim.
+
+See [Architecture](docs/ARCHITECTURE.md), [controller commands](docs/RUNTIME.md),
+[autonomous roadmap](docs/AUTONOMOUS_ROADMAP.md), [host-gate evidence](docs/AUTONOMOUS_HOST_GATE.md),
+[installation](INSTALL.md), and the normative [Autonomous Agent Profile](https://github.com/rrpauls/esra/blob/main/docs/ESRA_Autonomous_Agent_Profile.md).
 
 ## Development
 

@@ -48,9 +48,13 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual("", process.stdout)
         self.assertEqual("", process.stderr)
 
-    def test_hermes_claim_is_explicitly_non_native(self):
+    def test_hermes_adapter_declares_native_hooks(self):
         adapter = json.loads((ROOT / "adapters/hermes/adapter.json").read_text())
-        self.assertFalse(adapter["native_lifecycle_hook"])
+        self.assertTrue(adapter["native_lifecycle_hook"])
+        self.assertEqual(
+            {"post_tool_call", "post_llm_call", "on_session_end", "on_skill_lifecycle"},
+            set(adapter["hooks"]),
+        )
 
 
 if __name__ == "__main__":

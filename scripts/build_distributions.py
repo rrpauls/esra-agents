@@ -10,7 +10,7 @@ from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 FIXED_TIME = (2026, 1, 1, 0, 0, 0)
 COMMON_FILES = (
     "README.md", "INSTALL.md", "CONTRIBUTING.md", "CHANGELOG.md", "LICENSE",
@@ -82,9 +82,16 @@ def build_claude(output: Path) -> None:
 def build_hermes(output: Path) -> None:
     archive_root = "esra-agents-hermes"
     with ZipFile(output, "w") as archive:
-        for path in source_files():
+        native_sources = [
+            path for path in source_files()
+            if path.name != "plugin.json" and "adapters/openai" not in path.as_posix()
+        ]
+        for path in native_sources:
             relative = path.relative_to(ROOT).as_posix()
             add(archive, f"{archive_root}/{relative}", path.read_bytes(), path.suffix == ".py")
+        add(archive, f"{archive_root}/plugin.yaml", (ROOT / "adapters/hermes/plugin/plugin.yaml").read_bytes())
+        add(archive, f"{archive_root}/__init__.py", (ROOT / "adapters/hermes/plugin/__init__.py").read_bytes())
+        add(archive, f"{archive_root}/review_wakeup.py", (ROOT / "adapters/hermes/plugin/review_wakeup.py").read_bytes(), True)
         for relative in ("adapters/hermes/adapter.json", "adapters/hermes/legacy-skill-map.json"):
             path = ROOT / relative
             add(archive, f"{archive_root}/{relative}", path.read_bytes())
