@@ -10,6 +10,8 @@ class OpenClawPluginTests(unittest.TestCase):
         manifest = json.loads((ROOT / "openclaw.plugin.json").read_text())
         package = json.loads((ROOT / "package.json").read_text())
         source = (ROOT / package["openclaw"]["extensions"][0]).read_text()
+        compiled = ROOT / "adapters/openclaw/src/index.js"
+        self.assertTrue(compiled.is_file(), "remote OpenClaw packages require compiled JavaScript")
         self.assertEqual("esra-agents", manifest["id"])
         self.assertEqual(
             {

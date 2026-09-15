@@ -2,7 +2,7 @@
   "id": "esra-agents",
   "name": "ESRA Autonomous Controller",
   "description": "Guarded evolutionary self-correction for local agent-owned skills.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "activation": {
     "onStartup": true
   },

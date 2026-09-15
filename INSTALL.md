@@ -2,6 +2,20 @@
 
 Use a tagged release for reproducibility. Verify `SHA256SUMS` before installing.
 
+## OpenClaw 2026.9.1
+
+```bash
+openclaw plugins install --force --accept-capabilities git:github.com/rrpauls/esra-agents@v0.2.1
+openclaw plugins enable --accept-capabilities esra-agents
+openclaw config set plugins.entries.esra-agents.hooks.allowConversationAccess true
+openclaw gateway restart
+openclaw plugins inspect esra-agents --runtime --json
+```
+
+`--force` acknowledges that the Git source is outside ClawHub trust metadata.
+Grant `operator.admin` only to the separate controller identity that invokes
+`skills.proposals.apply`, never to the ordinary agent.
+
 ## ChatGPT and Codex
 
 Extract `esra-agents-marketplace.zip`, then add its marketplace root and plugin:

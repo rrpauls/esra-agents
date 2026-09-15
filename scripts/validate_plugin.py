@@ -50,8 +50,8 @@ def validate() -> list[str]:
         errors.append("Hermes adapter must not claim a native lifecycle hook")
     openclaw = read("openclaw.plugin.json")
     package = read("package.json")
-    if openclaw.get("id") != "esra-agents" or openclaw.get("version") != "0.2.0":
-        errors.append("OpenClaw manifest must identify esra-agents v0.2.0")
+    if openclaw.get("id") != "esra-agents" or openclaw.get("version") != "0.2.1":
+        errors.append("OpenClaw manifest must identify esra-agents v0.2.1")
     if package.get("openclaw", {}).get("extensions") != ["./adapters/openclaw/src/index.ts"]:
         errors.append("package.json must expose the native OpenClaw entry")
     return errors
