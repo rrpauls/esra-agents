@@ -1,0 +1,29 @@
+{
+  "name": "@rrpauls/esra-agents",
+  "version": "0.2.0",
+  "description": "Guarded autonomous ESRA controller and OpenClaw adapter",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": "github:rrpauls/esra-agents",
+  "files": [
+    "adapters/openclaw",
+    "runtime",
+    "skills",
+    "openclaw.plugin.json",
+    "plugin.json",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "openclaw": {
+    "extensions": [
+      "./adapters/openclaw/src/index.ts"
+    ]
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.9.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

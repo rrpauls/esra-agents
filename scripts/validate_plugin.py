@@ -22,7 +22,7 @@ def validate() -> list[str]:
     conformance = read("esra-conformance.json")
     marketplace = read(".agents/plugins/marketplace.json")
     versions = {portable.get("version"), codex.get("version"), claude.get("version"), conformance.get("implementation_version")}
-    if versions != {"0.1.0"}:
+    if versions != {"0.2.0"}:
         errors.append(f"version drift across manifests: {sorted(str(value) for value in versions)}")
     if portable.get("$schema") != "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json":
         errors.append("plugin.json does not target Agent Plugins 1.0.0")
@@ -33,8 +33,8 @@ def validate() -> list[str]:
     entry = marketplace.get("plugins", [{}])[0]
     if marketplace.get("name") != "esra-agents" or entry.get("name") != "esra-agents":
         errors.append("repository marketplace must publish esra-agents")
-    if entry.get("source", {}).get("ref") != "v0.1.0":
-        errors.append("repository marketplace ref must match v0.1.0")
+    if entry.get("source", {}).get("ref") != "v0.2.0":
+        errors.append("repository marketplace ref must match v0.2.0")
     extension = portable.get("extensions", {}).get("com.openai", {})
     hook_path = str(extension.get("hooks", "")).removeprefix("./")
     if not hook_path or not (ROOT / hook_path).is_file():
@@ -48,6 +48,12 @@ def validate() -> list[str]:
     hermes = read("adapters/hermes/adapter.json")
     if hermes.get("native_lifecycle_hook") is not False:
         errors.append("Hermes adapter must not claim a native lifecycle hook")
+    openclaw = read("openclaw.plugin.json")
+    package = read("package.json")
+    if openclaw.get("id") != "esra-agents" or openclaw.get("version") != "0.2.0":
+        errors.append("OpenClaw manifest must identify esra-agents v0.2.0")
+    if package.get("openclaw", {}).get("extensions") != ["./adapters/openclaw/src/index.ts"]:
+        errors.append("package.json must expose the native OpenClaw entry")
     return errors
 
 

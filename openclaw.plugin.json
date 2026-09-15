@@ -1,0 +1,43 @@
+{
+  "id": "esra-agents",
+  "name": "ESRA Autonomous Controller",
+  "description": "Guarded evolutionary self-correction for local agent-owned skills.",
+  "version": "0.2.0",
+  "activation": {
+    "onStartup": true
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "stateDir": {
+        "type": "string",
+        "minLength": 1
+      },
+      "pythonPath": {
+        "type": "string",
+        "minLength": 1,
+        "default": "python3"
+      },
+      "agentId": {
+        "type": "string",
+        "minLength": 1,
+        "default": "default"
+      }
+    }
+  },
+  "uiHints": {
+    "stateDir": {
+      "label": "ESRA state directory",
+      "help": "Private controller state. Defaults below OPENCLAW_STATE_DIR."
+    },
+    "pythonPath": {
+      "label": "Python executable",
+      "advanced": true
+    },
+    "agentId": {
+      "label": "Fallback agent id",
+      "advanced": true
+    }
+  }
+}

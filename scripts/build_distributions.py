@@ -10,7 +10,7 @@ from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 FIXED_TIME = (2026, 1, 1, 0, 0, 0)
 COMMON_FILES = (
     "README.md", "INSTALL.md", "CONTRIBUTING.md", "CHANGELOG.md", "LICENSE",
@@ -91,16 +91,39 @@ def build_hermes(output: Path) -> None:
         add(archive, f"{archive_root}/install.sh", (ROOT / "adapters/hermes/install.sh").read_bytes(), True)
 
 
+def build_openclaw(output: Path) -> None:
+    archive_root = "esra-agents-openclaw"
+    required = [
+        ROOT / "package.json",
+        ROOT / "openclaw.plugin.json",
+        ROOT / "plugin.json",
+        ROOT / "LICENSE",
+        ROOT / "NOTICE",
+        ROOT / "README.md",
+    ]
+    for directory in ("adapters/openclaw", "runtime", "skills"):
+        required.extend(
+            path for path in (ROOT / directory).rglob("*")
+            if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc"
+        )
+    with ZipFile(output, "w") as archive:
+        for path in sorted(required):
+            relative = path.relative_to(ROOT).as_posix()
+            add(archive, f"{archive_root}/{relative}", path.read_bytes(), path.suffix == ".py")
+
+
 def build(output_dir: Path) -> list[Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     outputs = [
         output_dir / "esra-agents-marketplace.zip",
         output_dir / "esra-agents-claude.zip",
         output_dir / "esra-agents-hermes.zip",
+        output_dir / "esra-agents-openclaw.zip",
     ]
     build_marketplace(outputs[0])
     build_claude(outputs[1])
     build_hermes(outputs[2])
+    build_openclaw(outputs[3])
     checksums = "".join(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n" for path in outputs)
     (output_dir / "SHA256SUMS").write_text(checksums, encoding="utf-8")
     return outputs

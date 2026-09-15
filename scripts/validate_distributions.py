@@ -32,6 +32,12 @@ EXPECTED = {
         "esra-agents-hermes/adapters/hermes/adapter.json",
         "esra-agents-hermes/runtime/esra_runtime.py",
     },
+    "esra-agents-openclaw.zip": {
+        "esra-agents-openclaw/package.json",
+        "esra-agents-openclaw/openclaw.plugin.json",
+        "esra-agents-openclaw/adapters/openclaw/src/index.ts",
+        "esra-agents-openclaw/runtime/esra_controller.py",
+    },
 }
 
 
