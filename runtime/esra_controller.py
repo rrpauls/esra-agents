@@ -453,6 +453,43 @@ class Controller:
         })
         return {"review": True, "correlation_id": correlation, "reason": reason}
 
+    def next_review(self, agent_id: str) -> dict[str, Any]:
+        agent_hash = self.agent_hash(agent_id)
+        latest: dict[str, dict[str, Any]] = {}
+        for row in load_jsonl(self.reviews_path):
+            if row.get("agent_hash") == agent_hash:
+                latest[str(row.get("correlation_id"))] = row
+        pending = next((row for row in latest.values() if row.get("status") == "pending"), None)
+        if not pending:
+            return {"review": None}
+        claimed = {**pending, "status": "claimed", "claimed_at": timestamp(), "timestamp": timestamp()}
+        append_jsonl(self.reviews_path, claimed)
+        return {"review": claimed}
+
+    def complete_review(self, agent_id: str, correlation_id: str, outcome: str, evidence_hash: str) -> dict[str, Any]:
+        if outcome not in {"proposed", "no-change", "inconclusive", "requires-human"}:
+            raise ValueError("invalid review outcome")
+        if not HASH16.fullmatch(evidence_hash) and not HASH64.fullmatch(evidence_hash):
+            raise ValueError("review evidence must be a hash")
+        agent_hash = self.agent_hash(agent_id)
+        latest = next(
+            (row for row in reversed(load_jsonl(self.reviews_path))
+             if row.get("agent_hash") == agent_hash and row.get("correlation_id") == correlation_id),
+            None,
+        )
+        if not latest or latest.get("status") != "claimed":
+            raise ValueError("review is not claimed")
+        completed = {
+            **latest,
+            "status": "completed",
+            "outcome": outcome,
+            "result_evidence_hash": evidence_hash,
+            "completed_at": timestamp(),
+            "timestamp": timestamp(),
+        }
+        append_jsonl(self.reviews_path, completed)
+        return completed
+
     def classify(self, target: str, surface: str, files: dict[str, str]) -> list[str]:
         reasons: list[str] = []
         lowered = target.lower()
@@ -588,9 +625,22 @@ class Controller:
             raise ValueError(f"refusing skill tree containing symlink: {target}")
         return target
 
-    def stage_external(self, candidate_id: str, revision_hash: str) -> dict[str, Any]:
+    @staticmethod
+    def _live_revision(target: Path) -> str:
+        live: dict[str, str] = {}
+        if not target.exists():
+            return digest(live)
+        for path in sorted(target.rglob("*")):
+            if path.is_symlink():
+                raise ValueError("live skill contains a symlink")
+            if path.is_file():
+                live[path.relative_to(target).as_posix()] = path.read_text(encoding="utf-8")
+        return digest(live)
+
+    def stage_external(self, candidate_id: str, revision_hash: str | None = None) -> dict[str, Any]:
         """Snapshot without mutation for a host-native skill workflow."""
         candidate = self.load_candidate(candidate_id)
+        revision_hash = revision_hash or candidate["revision_hash"]
         if revision_hash != candidate["revision_hash"]:
             raise ValueError("stale candidate revision")
         if candidate.get("requires_human"):
@@ -618,22 +668,17 @@ class Controller:
             self.save_candidate(candidate)
         return candidate
 
-    def complete_external(self, candidate_id: str, revision_hash: str, idempotency_key: str) -> dict[str, Any]:
+    def complete_external(self, candidate_id: str, revision_hash: str | None, idempotency_key: str) -> dict[str, Any]:
         """Record a host-native mutation only when the exact evaluated tree is live."""
         existing = self._receipt_by_key(idempotency_key)
         if existing:
             return existing
         candidate = self.load_candidate(candidate_id)
+        revision_hash = revision_hash or candidate["revision_hash"]
         if revision_hash != candidate["revision_hash"] or candidate.get("state") != "staged":
             raise ValueError("candidate is not staged at this revision")
         target = self._target(candidate)
-        live: dict[str, str] = {}
-        for path in sorted(target.rglob("*")):
-            if path.is_symlink():
-                raise ValueError("live skill contains a symlink")
-            if path.is_file():
-                live[path.relative_to(target).as_posix()] = path.read_text(encoding="utf-8")
-        if digest(live) != revision_hash:
+        if self._live_revision(target) != revision_hash:
             raise ValueError("host applied content does not match evaluated revision")
         self.transition(candidate, "active", "host-native workflow activated exact revision")
         candidate["activated_at"] = timestamp()
@@ -652,6 +697,8 @@ class Controller:
             raise ValueError(f"promotion disabled in mode {self.policy['mode']}")
         if candidate["requires_human"]:
             raise ValueError("candidate requires human approval")
+        if candidate.get("state") == "active" and self._live_revision(self._target(candidate)) == revision_hash:
+            return self._receipt(candidate, "promote", idempotency_key, snapshot_hash=candidate.get("snapshot_hash"), reason="interrupted promotion receipt recovered")
         if candidate["state"] not in {"evaluated", "staged"} or candidate.get("evaluation", {}).get("decision") != "pass":
             raise ValueError("candidate has not passed evaluation")
         if self._today_count(candidate["agent_hash"], "promote") >= self.policy["budgets"]["promotions_per_agent_day"]:
@@ -807,10 +854,24 @@ def build_parser() -> argparse.ArgumentParser:
     tick = commands.add_parser("tick")
     tick.add_argument("--agent", required=True)
     tick.add_argument("--nightly", action="store_true")
+    next_review = commands.add_parser("next-review")
+    next_review.add_argument("--agent", required=True)
+    complete_review = commands.add_parser("complete-review")
+    complete_review.add_argument("--agent", required=True)
+    complete_review.add_argument("--correlation", required=True)
+    complete_review.add_argument("--outcome", required=True)
+    complete_review.add_argument("--evidence-hash", required=True)
     promote = commands.add_parser("promote")
     promote.add_argument("--candidate", required=True)
     promote.add_argument("--revision", required=True)
     promote.add_argument("--idempotency-key", required=True)
+    stage_external = commands.add_parser("stage-external")
+    stage_external.add_argument("--candidate", required=True)
+    stage_external.add_argument("--revision")
+    complete_external = commands.add_parser("complete-external")
+    complete_external.add_argument("--candidate", required=True)
+    complete_external.add_argument("--revision")
+    complete_external.add_argument("--idempotency-key", required=True)
     rollback = commands.add_parser("rollback")
     rollback.add_argument("--candidate", required=True)
     rollback.add_argument("--idempotency-key", required=True)
@@ -839,12 +900,20 @@ def main(argv: list[str] | None = None) -> int:
             result = controller.ingest(load_input(args.input))
         elif args.command == "tick":
             result = controller.tick(args.agent, args.nightly)
+        elif args.command == "next-review":
+            result = controller.next_review(args.agent)
+        elif args.command == "complete-review":
+            result = controller.complete_review(args.agent, args.correlation, args.outcome, args.evidence_hash)
         elif args.command == "propose":
             result = controller.propose(load_input(args.input))
         elif args.command == "evaluate":
             result = controller.evaluate(args.candidate, load_input(args.input))
         elif args.command == "promote":
             result = controller.promote(args.candidate, args.revision, args.idempotency_key)
+        elif args.command == "stage-external":
+            result = controller.stage_external(args.candidate, args.revision)
+        elif args.command == "complete-external":
+            result = controller.complete_external(args.candidate, args.revision, args.idempotency_key)
         elif args.command == "rollback":
             result = controller.rollback(args.candidate, args.idempotency_key, args.reason)
         elif args.command == "issue-token":

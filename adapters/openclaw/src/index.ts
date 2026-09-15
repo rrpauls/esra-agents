@@ -25,10 +25,11 @@ function settings(api: any) {
   };
 }
 
-function controller(api: any, args: string[], input?: JsonObject): Promise<JsonObject> {
+function controller(api: any, args: string[], input?: JsonObject, skillsRoot?: string): Promise<JsonObject> {
   const config = settings(api);
   return new Promise((resolvePromise, reject) => {
-    const child = spawn(config.python, [CONTROLLER, "--state-dir", config.stateDir, ...args], {
+    const rootArgs = skillsRoot ? ["--skills-root", skillsRoot] : [];
+    const child = spawn(config.python, [CONTROLLER, "--state-dir", config.stateDir, ...rootArgs, ...args], {
       stdio: ["pipe", "pipe", "pipe"],
       env: process.env,
     });
@@ -60,7 +61,9 @@ function agentId(api: any, ctx: JsonObject): string {
 
 async function ingest(api: any, ctx: JsonObject, event: JsonObject): Promise<void> {
   const payload: JsonObject = { host: "openclaw", agent_id: agentId(api, ctx), ...event };
-  await controller(api, ["ingest"], payload);
+  const workspaceDir = stringValue(ctx.workspaceDir);
+  const skillsRoot = workspaceDir ? join(workspaceDir, "skills") : undefined;
+  await controller(api, ["ingest"], payload, skillsRoot);
   if (payload.outcome === "failure" || payload.verifier_failure === true) {
     await controller(api, ["tick", "--agent", String(payload.agent_id)]);
   }
@@ -117,7 +120,7 @@ export default {
       });
     }, { registrationId: "esra-agent-observer", timeoutMs: 5000 });
 
-    api.on("skill_proposal_evaluate", async (event: any) => {
+    api.on("skill_proposal_evaluate", async (event: any, ctx: JsonObject) => {
       const findings = staticFindings(event);
       if (findings.length > 0) {
         return { evaluatorVersion: PLUGIN_VERSION, mode: "guarded", decision: "block", summary: "Guarded ESRA validation blocked this revision.", findings };
@@ -130,6 +133,9 @@ export default {
         return { evaluatorVersion: PLUGIN_VERSION, mode: "guarded", decision: "block", summary: "Missing revision-bound ESRA apply token." };
       }
       try {
+        const workspaceDir = stringValue(ctx.workspaceDir);
+        if (!workspaceDir) throw new Error("missing workspace directory");
+        await controller(api, ["stage-external", "--candidate", event.proposal.id], undefined, join(workspaceDir, "skills"));
         await controller(api, ["consume-token", "--candidate", event.proposal.id, "--host-revision", event.proposal.revisionSha256, "--token", token]);
         return { evaluatorVersion: PLUGIN_VERSION, mode: "guarded", decision: "pass", summary: "Exact revision authorized by a completed ESRA evaluation." };
       } catch {
@@ -138,6 +144,12 @@ export default {
     }, { registrationId: "esra-guarded-evaluator", timeoutMs: 10000 });
 
     api.on("skill_proposal_changed", async (event: any, ctx: JsonObject) => {
+      if (event.action === "applied") {
+        const workspaceDir = stringValue(ctx.workspaceDir);
+        if (!workspaceDir) throw new Error("missing workspace directory");
+        const key = stringValue(event.correlationId) ?? `openclaw:${event.proposal.id}:${event.proposal.revisionSha256}`;
+        await controller(api, ["complete-external", "--candidate", event.proposal.id, "--idempotency-key", key], undefined, join(workspaceDir, "skills"));
+      }
       await ingest(api, ctx, {
         event_type: `skill_proposal_${event.action}`,
         outcome: event.action === "quarantined" || event.action === "stale" ? "failure" : "success",

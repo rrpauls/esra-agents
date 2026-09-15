@@ -102,6 +102,13 @@ class ControllerTests(unittest.TestCase):
         self.assertTrue(first["review"])
         restarted = Controller(self.state, self.skills)
         self.assertEqual("daily-budget", restarted.tick("agent-1")["reason"])
+        claimed = restarted.next_review("agent-1")["review"]
+        self.assertEqual(first["correlation_id"], claimed["correlation_id"])
+        completed = restarted.complete_review(
+            "agent-1", claimed["correlation_id"], "no-change", digest("review-result", 16)
+        )
+        self.assertEqual("completed", completed["status"])
+        self.assertIsNone(restarted.next_review("agent-1")["review"])
 
     def test_nightly_requires_three_substantial_tasks(self):
         for number in range(3):
@@ -225,6 +232,18 @@ class ControllerTests(unittest.TestCase):
             })
         self.assertEqual(SKILL_V1, (target / "SKILL.md").read_text(encoding="utf-8"))
         self.assertEqual("rolled-back", self.controller.load_candidate("candidate-1")["state"])
+
+    def test_interrupted_promotion_recovers_missing_receipt_after_restart(self):
+        candidate = self.proposal()
+        self.controller.evaluate("candidate-1", passing_evaluation(candidate["revision_hash"]))
+        self.controller.promote("candidate-1", candidate["revision_hash"], "lost-receipt")
+        self.controller.receipts_path.write_text("", encoding="utf-8")
+        recovered = Controller(self.state, self.skills).promote(
+            "candidate-1", candidate["revision_hash"], "recovered-receipt"
+        )
+        self.assertEqual("promote", recovered["action"])
+        self.assertEqual("interrupted promotion receipt recovered", recovered["reason"])
+        self.assertEqual(SKILL_V2, (self.skills / "helper" / "SKILL.md").read_text(encoding="utf-8"))
 
     def test_symlinked_live_skill_is_never_promoted(self):
         real = self.root / "real"
