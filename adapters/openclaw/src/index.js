@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-const PLUGIN_VERSION = "0.2.1";
+const PLUGIN_VERSION = "0.2.2";
 const CONTROLLER = resolve(dirname(fileURLToPath(import.meta.url)), "../../../runtime/esra_controller.py");
 const FORBIDDEN = /(?:https?:\/\/|requires_env|api[_-]?key|credential|authorization:|install[_ -]?hook|rm\s+-rf|mkfs\b|shutdown\b|curl\b.*\|\s*(?:sh|bash)|wget\b.*\|\s*(?:sh|bash))/i;
 const PROTECTED = /^(?:esra-|controller|evaluator|value|safety)/i;
