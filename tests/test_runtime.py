@@ -52,6 +52,20 @@ class RuntimeTests(unittest.TestCase):
             history = json.loads((Path(directory) / "trigger-history.json").read_text())
             self.assertEqual(1, len(history))
 
+    def test_trigger_blocks_esra_generated_reentry_even_when_forced(self):
+        with tempfile.TemporaryDirectory() as directory:
+            args = [
+                "--data-dir", directory, "trigger", "--complexity", "10",
+                "--major-change", "--session", "root", "--force",
+                "--origin", "esra", "--cycle-depth", "1",
+            ]
+            output = StringIO()
+            with redirect_stdout(output):
+                self.assertEqual(0, runtime.main(args))
+            result = json.loads(output.getvalue())
+            self.assertFalse(result["recommend"])
+            self.assertTrue(result["recursion_suppressed"])
+
     def test_alignment_gate_and_bounded_experiment(self):
         with tempfile.TemporaryDirectory() as directory:
             common = [
@@ -75,6 +89,34 @@ class RuntimeTests(unittest.TestCase):
                     if key.startswith(("stdout", "stderr"))
                 )
             )
+
+    def test_experiment_fails_closed_when_declared_artifact_is_missing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            missing = str(Path(directory) / "missing.png")
+            common = [
+                "--data-dir", directory, "experiment", "create", "--id", "artifact-trial",
+                "--hypothesis", "candidate emits an image",
+                "--baseline-command", f"{sys.executable} -c pass",
+                "--candidate-command", f"{sys.executable} -c pass",
+                "--candidate-artifact", missing,
+                "--guardrail", "candidate artifact must verify", "--rollback", "discard fixture",
+            ]
+            self.assertEqual(0, runtime.main(common))
+            self.assertEqual(2, runtime.main(["--data-dir", directory, "experiment", "run", "--id", "artifact-trial"]))
+            record = json.loads((Path(directory) / "experiments/artifact-trial.json").read_text())
+            candidate = next(row for row in record["runs"] if row["variant"] == "candidate")
+            self.assertFalse(candidate["ok"])
+            self.assertEqual("missing", candidate["artifact_checks"][0]["reason"])
+
+    def test_executable_verifier_can_reject_zero_exit_result(self):
+        result = runtime.run_once(
+            f"{sys.executable} -c pass",
+            5,
+            verifier_command=f"{sys.executable} -c 'raise SystemExit(4)'",
+        )
+        self.assertEqual(0, result["returncode"])
+        self.assertEqual(4, result["verifier_returncode"])
+        self.assertFalse(result["ok"])
 
     @unittest.skipUnless(hasattr(os, "symlink"), "symlinks unavailable")
     def test_refuses_symlinked_data_directory(self):

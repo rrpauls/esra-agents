@@ -171,18 +171,31 @@ def trigger_score(args: argparse.Namespace) -> tuple[int, list[str]]:
 
 
 def command_trigger(args: argparse.Namespace, base: Path) -> int:
+    origin = str(getattr(args, "origin", "user")).strip().lower()
+    try:
+        cycle_depth = int(getattr(args, "cycle_depth", 0))
+    except (TypeError, ValueError):
+        cycle_depth = 1
+    recursive = origin == "esra" or cycle_depth > 0 or bool(getattr(args, "esra_generated", False))
     score, reasons = trigger_score(args)
     history = read_json(base / "trigger-history.json", [])
     today = utc_now()[:10]
     same_session = [row for row in history if row.get("session") == digest(args.session)]
     daily = [row for row in history if str(row.get("timestamp", "")).startswith(today)]
     rate_limited = bool(same_session) or len(daily) >= 3
-    recommend = score >= 10 and (args.force or not rate_limited)
+    # Force is a user override for the daily limiter only. It never permits a
+    # second review for the same root/session or an ESRA-generated review.
+    recommend = score >= 10 and not recursive and not same_session and (args.force or len(daily) < 3)
+    if recursive:
+        reasons.append("recursive ESRA entry suppressed")
+    elif same_session:
+        reasons.append("root task already reviewed")
     result = {
         "recommend": recommend,
         "score": score,
         "reasons": reasons,
-        "rate_limited": rate_limited and not args.force,
+        "rate_limited": (bool(same_session) or len(daily) >= 3) and not recommend,
+        "recursion_suppressed": recursive,
         "note": "recommendation only; no ESRA cycle was executed",
     }
     if recommend:
@@ -231,8 +244,79 @@ def experiment_path(base: Path, experiment_id: str) -> Path:
     return base / "experiments" / f"{safe_id(experiment_id, 'experiment id')}.json"
 
 
-def run_once(command: str, timeout: float) -> dict[str, Any]:
+IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
+
+
+def artifact_fingerprints(paths: Iterable[str]) -> dict[str, tuple[int, int]]:
+    fingerprints: dict[str, tuple[int, int]] = {}
+    for raw in paths:
+        path = Path(raw).expanduser()
+        try:
+            stat = path.stat()
+        except OSError:
+            continue
+        if path.is_file():
+            fingerprints[str(path)] = (stat.st_size, stat.st_mtime_ns)
+    return fingerprints
+
+
+def _valid_image_envelope(path: Path) -> bool:
+    try:
+        with path.open("rb") as handle:
+            head = handle.read(16)
+            size = path.stat().st_size
+            handle.seek(max(0, size - 12))
+            tail = handle.read(12)
+    except OSError:
+        return False
+    suffix = path.suffix.lower()
+    if suffix == ".png":
+        return head.startswith(b"\x89PNG\r\n\x1a\n") and tail.endswith(b"IEND\xaeB`\x82")
+    if suffix in {".jpg", ".jpeg"}:
+        return head.startswith(b"\xff\xd8") and tail.endswith(b"\xff\xd9")
+    if suffix == ".gif":
+        return head[:6] in {b"GIF87a", b"GIF89a"} and tail.endswith(b";")
+    if suffix == ".webp":
+        return size >= 12 and head[:4] == b"RIFF" and head[8:12] == b"WEBP"
+    if suffix == ".bmp":
+        return size >= 26 and head[:2] == b"BM"
+    return True
+
+
+def verify_artifacts(paths: Iterable[str], before: dict[str, tuple[int, int]]) -> list[dict[str, Any]]:
+    checks: list[dict[str, Any]] = []
+    for raw in paths:
+        path = Path(raw).expanduser()
+        check: dict[str, Any] = {"path": str(path), "ok": False}
+        try:
+            stat = path.stat()
+            current = (stat.st_size, stat.st_mtime_ns)
+            check["bytes"] = stat.st_size
+            if not path.is_file():
+                check["reason"] = "not-file"
+            elif stat.st_size <= 0:
+                check["reason"] = "empty"
+            elif before.get(str(path)) == current:
+                check["reason"] = "stale"
+            elif path.suffix.lower() in IMAGE_SUFFIXES and not _valid_image_envelope(path):
+                check["reason"] = "invalid-image"
+            else:
+                check.update({"ok": True, "reason": "verified"})
+        except OSError:
+            check["reason"] = "missing"
+        checks.append(check)
+    return checks
+
+
+def run_once(
+    command: str,
+    timeout: float,
+    artifacts: Iterable[str] = (),
+    verifier_command: str | None = None,
+) -> dict[str, Any]:
     started = time.monotonic()
+    artifact_paths = list(artifacts)
+    before = artifact_fingerprints(artifact_paths)
     try:
         completed = subprocess.run(
             shlex.split(command),
@@ -241,14 +325,35 @@ def run_once(command: str, timeout: float) -> dict[str, Any]:
             timeout=timeout,
             check=False,
         )
+        checks = verify_artifacts(artifact_paths, before)
+        ok = completed.returncode == 0 and all(check["ok"] for check in checks)
+        verifier: dict[str, Any] = {}
+        if ok and verifier_command:
+            try:
+                verified = subprocess.run(
+                    shlex.split(verifier_command), capture_output=True, text=True,
+                    timeout=timeout, check=False,
+                )
+                verifier = {
+                    "verifier_returncode": verified.returncode,
+                    "verifier_stdout_digest": digest(verified.stdout),
+                    "verifier_stderr_digest": digest(verified.stderr),
+                }
+                ok = verified.returncode == 0
+            except subprocess.TimeoutExpired:
+                verifier = {"verifier_returncode": None, "verifier_timed_out": True}
+                ok = False
         return {
             "returncode": completed.returncode,
             "duration_ms": round((time.monotonic() - started) * 1000),
             "stdout_digest": digest(completed.stdout),
             "stderr_digest": digest(completed.stderr),
+            "artifact_checks": checks,
+            "ok": ok,
+            **verifier,
         }
     except subprocess.TimeoutExpired:
-        return {"returncode": None, "duration_ms": round((time.monotonic() - started) * 1000), "timed_out": True}
+        return {"returncode": None, "duration_ms": round((time.monotonic() - started) * 1000), "timed_out": True, "ok": False}
 
 
 def command_experiment_create(args: argparse.Namespace, base: Path) -> int:
@@ -263,6 +368,10 @@ def command_experiment_create(args: argparse.Namespace, base: Path) -> int:
         "mode": args.mode,
         "timeout": args.timeout,
         "guardrail": args.guardrail,
+        "baseline_artifacts": list(getattr(args, "baseline_artifact", []) or []),
+        "candidate_artifacts": list(getattr(args, "candidate_artifact", []) or []),
+        "baseline_verifier_command": getattr(args, "baseline_verifier_command", None),
+        "candidate_verifier_command": getattr(args, "candidate_verifier_command", None),
         "rollback": args.rollback,
         "alignment": args.alignment,
         "status": "designed",
@@ -280,12 +389,17 @@ def command_experiment_run(args: argparse.Namespace, base: Path) -> int:
     order = ["baseline", "candidate"] if record["mode"] == "canary" else ["baseline", "candidate", "candidate", "baseline"]
     runs = []
     for variant in order:
-        result = run_once(record[f"{variant}_command"], float(record["timeout"]))
+        result = run_once(
+            record[f"{variant}_command"],
+            float(record["timeout"]),
+            record.get(f"{variant}_artifacts", []),
+            record.get(f"{variant}_verifier_command"),
+        )
         runs.append({"variant": variant, **result})
-        if variant == "candidate" and result.get("returncode") != 0:
+        if variant == "candidate" and result.get("ok") is not True:
             break
     record["runs"] = runs
-    record["status"] = "stopped" if any(row.get("returncode") != 0 for row in runs) else "completed"
+    record["status"] = "stopped" if any(row.get("ok") is not True for row in runs) else "completed"
     record["ran_at"] = utc_now()
     atomic_json(path, record)
     append_event(base, "experiment", experiment_id=args.id, outcome=record["status"], evidence=[path.name])
@@ -389,6 +503,9 @@ def build_parser() -> argparse.ArgumentParser:
     trigger.add_argument("--confidence", type=float, default=1.0)
     trigger.add_argument("--session", default="anonymous")
     trigger.add_argument("--force", action="store_true")
+    trigger.add_argument("--origin", choices=("user", "host", "esra"), default="user")
+    trigger.add_argument("--cycle-depth", type=int, default=0)
+    trigger.add_argument("--esra-generated", action="store_true")
     trigger.set_defaults(function=command_trigger)
 
     record = commands.add_parser("record")
@@ -416,6 +533,10 @@ def build_parser() -> argparse.ArgumentParser:
     create.add_argument("--mode", choices=("canary", "ab"), default="canary")
     create.add_argument("--timeout", type=float, default=30)
     create.add_argument("--guardrail", required=True)
+    create.add_argument("--baseline-artifact", action="append", default=[])
+    create.add_argument("--candidate-artifact", action="append", default=[])
+    create.add_argument("--baseline-verifier-command")
+    create.add_argument("--candidate-verifier-command")
     create.add_argument("--rollback", required=True)
     create.add_argument("--alignment", type=float, default=1.0)
     create.set_defaults(function=command_experiment_create)

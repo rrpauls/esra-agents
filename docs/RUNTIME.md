@@ -32,10 +32,22 @@ python3 runtime/esra_runtime.py --host hermes dashboard
 
 `trigger` returns a recommendation only. `record` stores a result supplied by
 the caller. No command starts an ESRA reasoning cycle or promotes a change.
+Trigger callers should carry a stable root in `--session` plus `--origin` and
+`--cycle-depth`. ESRA-originated work, positive cycle depth, and a second review
+for the same root are suppressed before scoring; `--force` only bypasses the
+daily limit for a new non-ESRA root.
 
 Experiments require a hypothesis, guardrail, rollback, alignment score, and
 explicit `experiment run`. Output content is represented only by digests in the
-experiment record.
+experiment record. `--baseline-artifact PATH` and `--candidate-artifact PATH`
+may be repeated when exit status alone cannot prove completion. A declared
+artifact must be created or changed by that invocation, be non-empty, and, for
+common image extensions, have a valid container envelope. Missing, stale, empty,
+or invalid artifacts make the run fail closed.
+For other machine-checkable conditions, use `--baseline-verifier-command` or
+`--candidate-verifier-command`. The verifier runs without a shell after the
+primary command and artifact checks pass; any non-zero exit or timeout rejects
+that trial. The descriptive `--guardrail` is not executed as code.
 
 ## Autonomous controller
 
