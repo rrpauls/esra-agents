@@ -6,7 +6,11 @@
 [![Release: v0.2.2 prerelease](https://img.shields.io/badge/Release-v0.2.2%20prerelease-orange.svg)](https://github.com/rrpauls/esra-agents/releases/tag/v0.2.2)
 
 <p align="center">
-  <img src="assets/logo-inverse.svg" alt="ESRA — Evolutionary Self-Recursive Architecture logo" width="240"/>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo.svg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/logo-inverse.svg">
+    <img src="assets/logo-inverse.svg" alt="ESRA — Evolutionary Self-Recursive Architecture logo" width="240">
+  </picture>
 </p>
 
 <p align="center">
