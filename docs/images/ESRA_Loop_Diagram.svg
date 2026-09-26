@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1000" viewBox="0 0 1800 1000">
+<defs>
+  <linearGradient id="titleGrad" x1="0" x2="1">
+    <stop offset="0%" stop-color="#63E6C6"/>
+    <stop offset="100%" stop-color="#B2A8FF"/>
+  </linearGradient>
+  <marker id="arrow-31D0AA" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+    <path d="M0,0 L12,6 L0,12 Z" fill="#31D0AA"/>
+  </marker>
+  <marker id="arrow-8B7CFF" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+    <path d="M0,0 L12,6 L0,12 Z" fill="#8B7CFF"/>
+  </marker>
+</defs>
+<rect width="100%" height="100%" fill="#07111F"/>
+
+<text x="72" y="72" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800" fill="#63E6C6" text-anchor="start" opacity="1.0">ESRA LOOP</text>
+<text x="72" y="124" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="800" fill="url(#titleGrad)">Controlled self-improvement, not blind iteration.</text>
+<text x="72" y="160" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Observe → align → test → integrate → learn → audit the loop itself</text>
+<rect x="72" y="194" width="1656" height="92" rx="22" fill="#0B1728" stroke="#1E3550" stroke-width="2" opacity="1"/>
+<text x="100" y="231" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700" fill="#9FB0C5" text-anchor="start" opacity="1.0">Ad-hoc improvement</text>
+<text x="100" y="263" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#D58A92" text-anchor="start" opacity="1.0">ACT  →  RETRY  →  DRIFT RISK</text>
+<text x="740" y="231" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="800" fill="#63E6C6" text-anchor="start" opacity="1.0">ESRA</text>
+<text x="740" y="263" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#F5F8FC" text-anchor="start" opacity="1.0">OBSERVE  →  ALIGN  →  TEST  →  INTEGRATE  →  AUDIT</text>
+<rect x="1463" y="216" width="230" height="48" rx="24.0" fill="#31D0AA"/>
+<text x="1578.0" y="245.44" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700" fill="#07111F" text-anchor="middle" opacity="1.0">evidence-backed loop</text>
+<rect x="72" y="320" width="1195" height="570" rx="28" fill="#091525" stroke="#1E3550" stroke-width="2" opacity="1"/>
+<text x="100" y="360" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="800" fill="#9FB0C5" text-anchor="start" opacity="1.0">THE CORE LOOP</text>
+<text x="100" y="392" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#F5F8FC" text-anchor="start" opacity="1.0">Every cycle must leave evidence.</text>
+<rect x="100" y="420" width="255" height="132" rx="22" fill="#0D1C30" stroke="#1E3550" stroke-width="2" opacity="1"/>
+<circle cx="134" cy="452" r="18" fill="#31D0AA"/>
+<text x="134" y="459" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="800" fill="#07111F" text-anchor="middle" opacity="1.0">1</text>
+<text x="166" y="458" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700" fill="#F5F8FC" text-anchor="start" opacity="1.0">Observe</text>
+<text x="128" y="496" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Self-Observer</text>
+<text x="128" y="528" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="650" fill="#31D0AA" text-anchor="start" opacity="1.0">See what actually happened</text>
+<rect x="390" y="420" width="255" height="132" rx="22" fill="#0D1C30" stroke="#1E3550" stroke-width="2" opacity="1"/>
+<circle cx="424" cy="452" r="18" fill="#31D0AA"/>
+<text x="424" y="459" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="800" fill="#07111F" text-anchor="middle" opacity="1.0">2</text>
+<text x="456" y="458" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700" fill="#F5F8FC" text-anchor="start" opacity="1.0">Improve</text>
+<text x="418" y="496" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Self-Improver</text>
+<text x="418" y="528" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="650" fill="#31D0AA" text-anchor="start" opacity="1.0">Generate explicit hypotheses</text>
+<rect x="680" y="420" width="255" height="132" rx="22" fill="#0D1C30" stroke="#1E3550" stroke-width="2" opacity="1"/>
+<circle cx="714" cy="452" r="18" fill="#F0C86E"/>
+<text x="714" y="459" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="800" fill="#07111F" text-anchor="middle" opacity="1.0">3</text>
+<text x="746" y="458" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700" fill="#F5F8FC" text-anchor="start" opacity="1.0">Align</text>
+<text x="708" y="496" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Value-Clarifier</text>
+<text x="708" y="528" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="650" fill="#F0C86E" text-anchor="start" opacity="1.0">Gate changes by values</text>
+<rect x="970" y="420" width="255" height="132" rx="22" fill="#0D1C30" stroke="#1E3550" stroke-width="2" opacity="1"/>
+<circle cx="1004" cy="452" r="18" fill="#8B7CFF"/>
+<text x="1004" y="459" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="800" fill="#07111F" text-anchor="middle" opacity="1.0">4</text>
+<text x="1036" y="458" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700" fill="#F5F8FC" text-anchor="start" opacity="1.0">Analyze</text>
+<text x="998" y="496" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Optimizer + System Dynamics</text>
+<text x="998" y="528" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="650" fill="#8B7CFF" text-anchor="start" opacity="1.0">Check downstream effects</text>
+<rect x="825" y="650" width="255" height="132" rx="22" fill="#0D1C30" stroke="#1E3550" stroke-width="2" opacity="1"/>
+<circle cx="859" cy="682" r="18" fill="#31D0AA"/>
+<text x="859" y="689" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="800" fill="#07111F" text-anchor="middle" opacity="1.0">5</text>
+<text x="891" y="688" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700" fill="#F5F8FC" text-anchor="start" opacity="1.0">Experiment</text>
+<text x="853" y="726" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Experimenter</text>
+<text x="853" y="758" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="650" fill="#31D0AA" text-anchor="start" opacity="1.0">Test safely before adoption</text>
+<rect x="535" y="650" width="255" height="132" rx="22" fill="#0D1C30" stroke="#1E3550" stroke-width="2" opacity="1"/>
+<circle cx="569" cy="682" r="18" fill="#31D0AA"/>
+<text x="569" y="689" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="800" fill="#07111F" text-anchor="middle" opacity="1.0">6</text>
+<text x="601" y="688" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700" fill="#F5F8FC" text-anchor="start" opacity="1.0">Integrate</text>
+<text x="563" y="726" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Mental-Model-Updater</text>
+<text x="563" y="758" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="650" fill="#31D0AA" text-anchor="start" opacity="1.0">Promote only useful learning</text>
+<rect x="245" y="650" width="255" height="132" rx="22" fill="#0D1C30" stroke="#1E3550" stroke-width="2" opacity="1"/>
+<circle cx="279" cy="682" r="18" fill="#8B7CFF"/>
+<text x="279" y="689" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="800" fill="#07111F" text-anchor="middle" opacity="1.0">7</text>
+<text x="311" y="688" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700" fill="#F5F8FC" text-anchor="start" opacity="1.0">Harden</text>
+<text x="273" y="726" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Antifragility-Builder</text>
+<text x="273" y="758" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="650" fill="#8B7CFF" text-anchor="start" opacity="1.0">Turn stress into resilience</text>
+<line x1="359" y1="486.0" x2="380" y2="486.0" stroke="#31D0AA" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow-31D0AA)"/>
+<line x1="649" y1="486.0" x2="670" y2="486.0" stroke="#31D0AA" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow-31D0AA)"/>
+<line x1="939" y1="486.0" x2="960" y2="486.0" stroke="#31D0AA" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow-31D0AA)"/>
+<path d="M 1097.5 552 C 1097.5 605, 952.5 605, 952.5 640" fill="none" stroke="#31D0AA" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow-31D0AA)"/>
+<line x1="820" y1="716.0" x2="800" y2="716.0" stroke="#31D0AA" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow-31D0AA)"/>
+<line x1="530" y1="716.0" x2="510" y2="716.0" stroke="#31D0AA" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow-31D0AA)"/>
+<path d="M 372.5 782 C 175 860, 105 770, 105 650 C 105 590, 110 535, 140 490" fill="none" stroke="#31D0AA" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow-31D0AA)"/>
+<rect x="100" y="815" width="1139" height="52" rx="16" fill="#15173B" stroke="#8B7CFF" stroke-width="2" stroke-dasharray="9 8"/>
+<text x="120" y="848" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="800" fill="#B2A8FF" text-anchor="start" opacity="1.0">META-AUDIT</text>
+<text x="250" y="848" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="650" fill="#F5F8FC" text-anchor="start" opacity="1.0">Loop-Auditor checks the improvement process itself</text>
+<rect x="960" y="823" width="250" height="36" rx="18.0" fill="#B2A8FF"/>
+<text x="1085.0" y="845.76" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#07111F" text-anchor="middle" opacity="1.0">every 3–5 cycles / anomaly</text>
+<path d="M 669.5 815 C 669.5 795, 669.5 785, 669.5 770" fill="none" stroke="#8B7CFF" stroke-width="3" stroke-dasharray="7 7" marker-end="url(#arrow-8B7CFF)"/>
+<rect x="1305" y="320" width="423" height="570" rx="28" fill="#0A1626" stroke="#1E3550" stroke-width="2" opacity="1"/>
+<text x="1333" y="362" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="800" fill="#63E6C6" text-anchor="start" opacity="1.0">WHY THIS ARCHITECTURE WINS</text>
+<text x="1333" y="402" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="800" fill="#F5F8FC" text-anchor="start" opacity="1.0">The advantage is control</text>
+<text x="1333" y="434" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">over the improvement process itself.</text>
+<circle cx="1343" cy="490" r="20" fill="#F0C86E"/>
+<text x="1343" y="496" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#07111F" text-anchor="middle" opacity="1.0">01</text>
+<text x="1377" y="490" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" fill="#F5F8FC" text-anchor="start" opacity="1.0">VALUES ARE A GATE</text>
+<text x="1377" y="519" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Alignment happens before significant</text>
+<text x="1377" y="541" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">experiments.</text>
+<circle cx="1343" cy="584" r="20" fill="#31D0AA"/>
+<text x="1343" y="590" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#07111F" text-anchor="middle" opacity="1.0">02</text>
+<text x="1377" y="584" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" fill="#F5F8FC" text-anchor="start" opacity="1.0">TEST BEFORE INTEGRATE</text>
+<text x="1377" y="613" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Ideas must survive evidence, not intuition</text>
+<text x="1377" y="635" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">alone.</text>
+<circle cx="1343" cy="678" r="20" fill="#8B7CFF"/>
+<text x="1343" y="684" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#07111F" text-anchor="middle" opacity="1.0">03</text>
+<text x="1377" y="678" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" fill="#F5F8FC" text-anchor="start" opacity="1.0">FAILURE BECOMES SIGNAL</text>
+<text x="1377" y="707" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Stress and mistakes feed the next cycle.</text>
+<circle cx="1343" cy="772" r="20" fill="#63E6C6"/>
+<text x="1343" y="778" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#07111F" text-anchor="middle" opacity="1.0">04</text>
+<text x="1377" y="772" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" fill="#F5F8FC" text-anchor="start" opacity="1.0">THE LOOP CAN FIX ITSELF</text>
+<text x="1377" y="801" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">Meta-audit detects drift, bad equilibria</text>
+<text x="1377" y="823" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="500" fill="#9FB0C5" text-anchor="start" opacity="1.0">and weak feedback.</text>
+<text x="72" y="950" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="600" fill="#9FB0C5" text-anchor="start" opacity="1.0">ESRA 1.2 • Evolutionary Self-Recursive Architecture</text>
+<text x="1728" y="950" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="600" fill="#9FB0C5" text-anchor="end" opacity="1.0">One cycle = one deliberate, auditable improvement</text>
+</svg>
