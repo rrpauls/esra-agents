@@ -98,6 +98,8 @@ Python hooks or filesystem persistence. Use a tagged release and verify
 
 ## Autonomous loop
 
+![ESRA Loop Diagram](docs/images/ESRA_Loop_Diagram.svg)
+
 The autonomous profile implements:
 
 `observation → trigger → proposal → alignment → experiment → blind evaluation → local promotion → canary/rollback`
