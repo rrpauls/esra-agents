@@ -74,6 +74,7 @@ for the exact claim boundaries.
 |-----------|---------|
 | [`skills/`](skills/) | Five host-neutral, selectively invoked ESRA skills |
 | [`runtime/`](runtime/) | Shared runtime, portable exporter, lifecycle hook, and guarded autonomous controller |
+| [`runtime/mcp_evidence.py`](runtime/mcp_evidence.py) | Privacy-bounded receipts for GitHub, security, browser-pilot, and SOFA evidence |
 | [`adapters/`](adapters/) | Thin host integrations for OpenAI clients, Claude Code, OpenClaw, and Hermes Agent |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Portability boundary, controller policy boundary, and persistence model |
 | [`docs/RUNTIME.md`](docs/RUNTIME.md) | Runtime, export, and autonomous-controller commands |
