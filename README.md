@@ -100,7 +100,7 @@ Python hooks or filesystem persistence. Use a tagged release and verify
 
 ## Autonomous loop
 
-![ESRA Loop Diagram](docs/images/ESRA_Loop_Diagram.svg)
+![ESRA Loop Diagram](docs/images/ESRA_Loop_Diagram.png)
 
 The autonomous profile implements:
 
