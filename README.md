@@ -47,7 +47,11 @@ portable core.
 Routine work bypasses ESRA. Focused skills work independently, and a major
 change may receive at most one bounded review.
 
-![ESRA Loop Diagram](docs/images/ESRA_Loop_Diagram.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/ESRA_Loop_Diagram_Dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/images/ESRA_Loop_Diagram.png">
+  <img alt="ESRA Loop Diagram" src="docs/images/ESRA_Loop_Diagram.png">
+</picture>
 
 ## Current status
 
