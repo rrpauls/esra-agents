@@ -47,6 +47,8 @@ portable core.
 Routine work bypasses ESRA. Focused skills work independently, and a major
 change may receive at most one bounded review.
 
+![ESRA Loop Diagram](docs/images/ESRA_Loop_Diagram.png)
+
 ## Current status
 
 - **Specification target:** ESRA 1.2.
@@ -99,8 +101,6 @@ Python hooks or filesystem persistence. Use a tagged release and verify
 ---
 
 ## Autonomous loop
-
-![ESRA Loop Diagram](docs/images/ESRA_Loop_Diagram.png)
 
 The autonomous profile implements:
 
