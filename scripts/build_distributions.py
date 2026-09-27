@@ -119,6 +119,15 @@ def build_openclaw(output: Path) -> None:
             add(archive, f"{archive_root}/{relative}", path.read_bytes(), path.suffix == ".py")
 
 
+def build_antigravity(output: Path) -> None:
+    archive_root = "esra-agents-antigravity"
+    with ZipFile(output, "w") as archive:
+        for path in source_files():
+            relative = path.relative_to(ROOT).as_posix()
+            add(archive, f"{archive_root}/{relative}", path.read_bytes(), path.suffix == ".py")
+        add(archive, f"{archive_root}/hooks.json", (ROOT / "adapters/antigravity/hooks.json").read_bytes())
+
+
 def build(output_dir: Path) -> list[Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     outputs = [
@@ -126,11 +135,13 @@ def build(output_dir: Path) -> list[Path]:
         output_dir / "esra-agents-claude.zip",
         output_dir / "esra-agents-hermes.zip",
         output_dir / "esra-agents-openclaw.zip",
+        output_dir / "esra-agents-antigravity.zip",
     ]
     build_marketplace(outputs[0])
     build_claude(outputs[1])
     build_hermes(outputs[2])
     build_openclaw(outputs[3])
+    build_antigravity(outputs[4])
     checksums = "".join(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n" for path in outputs)
     (output_dir / "SHA256SUMS").write_text(checksums, encoding="utf-8")
     return outputs

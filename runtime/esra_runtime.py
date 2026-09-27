@@ -59,6 +59,8 @@ def resolve_data_dir(host: str, override: str | None = None) -> Path:
         raw = str(home / "esra" / "data")
     elif host == "claude":
         raw = str(Path.home() / ".claude" / "esra")
+    elif host == "antigravity":
+        raw = str(Path.home() / ".gemini" / "antigravity" / "esra")
     else:
         raw = str(Path.home() / ".codex" / "esra")
     path = Path(raw).expanduser()
@@ -139,14 +141,17 @@ def load_events(base: Path, limit: int | None = None) -> list[dict[str, Any]]:
 
 def record_lifecycle(payload: dict[str, Any], host: str, base: Path) -> dict[str, Any]:
     """Store an allowlisted lifecycle counter, never content or raw identifiers."""
+    workspace = payload.get("cwd", "")
+    if not workspace and payload.get("workspacePaths"):
+        workspace = payload["workspacePaths"][0]
     return append_event(
         base,
         "lifecycle",
         host=host,
         event=str(payload.get("hook_event_name") or payload.get("event") or "Unknown"),
-        session=digest(payload.get("session_id") or payload.get("sessionId")),
-        turn=digest(payload.get("turn_id") or payload.get("turnId")),
-        workspace=Path(str(payload.get("cwd", ""))).name or None,
+        session=digest(payload.get("session_id") or payload.get("sessionId") or payload.get("conversationId")),
+        turn=digest(payload.get("turn_id") or payload.get("turnId") or payload.get("stepIdx")),
+        workspace=Path(str(workspace)).name or None,
     )
 
 
@@ -491,7 +496,7 @@ def command_oversight(args: argparse.Namespace, base: Path) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Host-neutral ESRA evidence and experiment runtime")
-    parser.add_argument("--host", choices=("openai", "claude", "hermes"), default="openai")
+    parser.add_argument("--host", choices=("openai", "claude", "hermes", "antigravity"), default="openai")
     parser.add_argument("--data-dir")
     commands = parser.add_subparsers(dest="command", required=True)
 

@@ -55,8 +55,8 @@ change may receive at most one bounded review.
 - **Autonomous controller:** exact-revision promotion, one-time authorization,
   blind evaluation, canary rollout, rollback, and privacy-bounded persistence.
 - **Native adapters:** OpenClaw TypeScript adapter at
-  [`v0.2.2` prerelease](https://github.com/rrpauls/esra-agents/releases/tag/v0.2.2)
-  and Hermes Python plugin at v0.3.0.
+  [`v0.2.2` prerelease](https://github.com/rrpauls/esra-agents/releases/tag/v0.2.2),
+  Hermes Python plugin at v0.3.0, and Antigravity Customization plugin.
 - **Maturity boundary:** stable autonomous capability remains gated by the
   shared host gate and seven-day soak. Package validation and passing tests do
   not by themselves prove native lifecycle behavior in every host.
@@ -87,6 +87,7 @@ for the exact claim boundaries.
 |------|-------------|-----------------------|
 | OpenClaw | Native TypeScript lifecycle adapter and Skill Workshop promotion gate | v0.2.2 prerelease |
 | Hermes Agent | Native Python plugin and isolated `skill_manage` flow | v0.3.0 package |
+| Antigravity | Native plugin manifest with lifecycle hooks and skills | v0.3.0 package |
 | ChatGPT / Codex | Agent Plugins 1.0 package with portable skills | Local marketplace distribution |
 | Claude Code | Plugin manifest, portable skills, and lifecycle mapping | Claude plugin distribution |
 

@@ -74,3 +74,15 @@ The jobs use fresh sessions and only the `esra` and `skills` toolsets. A cheap
 pre-check suppresses the 15-minute event job when the durable controller queue
 has no pending review. This command is deliberately operator-run because cron
 configuration is a protected host surface.
+
+## Antigravity
+
+Extract `esra-agents-antigravity.zip` into your workspace or global plugins directory:
+
+```bash
+mkdir -p ~/.gemini/config/plugins/esra-agents
+unzip -d ~/.gemini/config/plugins/esra-agents /absolute/path/to/esra-agents-antigravity.zip
+```
+
+Antigravity natively discovers the portable `skills/` folder and `plugin.json`. The included `hooks.json` maps Antigravity's lifecycle events to the ESRA runtime to preserve your review history automatically.
+
