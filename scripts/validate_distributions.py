@@ -41,6 +41,11 @@ EXPECTED = {
         "esra-agents-openclaw/adapters/openclaw/src/index.ts",
         "esra-agents-openclaw/runtime/esra_controller.py",
     },
+    "esra-agents-antigravity.zip": {
+        "esra-agents-antigravity/hooks.json",
+        "esra-agents-antigravity/plugin.json",
+        "esra-agents-antigravity/runtime/esra_runtime.py",
+    },
 }
 
 
@@ -93,7 +98,7 @@ def main() -> int:
         print(f"ERROR: {error}")
     if errors:
         return 1
-    print("Validated deterministic OpenAI, Claude, Hermes, and OpenClaw distributions")
+    print("Validated deterministic OpenAI, Claude, Hermes, OpenClaw, and Antigravity distributions")
     return 0
 
 

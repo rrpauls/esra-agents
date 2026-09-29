@@ -3,7 +3,7 @@
 [![Validate](https://github.com/rrpauls/esra-agents/actions/workflows/validate.yml/badge.svg)](https://github.com/rrpauls/esra-agents/actions/workflows/validate.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![Specification: ESRA 1.2](https://img.shields.io/badge/Specification-ESRA%201.2-6f42c1.svg)](https://github.com/rrpauls/esra/blob/main/docs/ESRA_Technical_Specification.md)
-[![Release: v0.2.2 prerelease](https://img.shields.io/badge/Release-v0.2.2%20prerelease-orange.svg)](https://github.com/rrpauls/esra-agents/releases/tag/v0.2.2)
+[![Release: v0.3.0 prerelease](https://img.shields.io/badge/Release-v0.3.0%20prerelease-orange.svg)](https://github.com/rrpauls/esra-agents/releases/tag/v0.3.0)
 
 <p align="center">
   <picture>
@@ -61,7 +61,7 @@ change may receive at most one bounded review.
 - **Autonomous controller:** exact-revision promotion, one-time authorization,
   blind evaluation, canary rollout, rollback, and privacy-bounded persistence.
 - **Native adapters:** OpenClaw TypeScript adapter at
-  [`v0.2.2` prerelease](https://github.com/rrpauls/esra-agents/releases/tag/v0.2.2),
+  [`v0.3.0` prerelease](https://github.com/rrpauls/esra-agents/releases/tag/v0.3.0),
   Hermes Python plugin at v0.3.0, and Antigravity Customization plugin.
 - **Maturity boundary:** stable autonomous capability remains gated by the
   shared host gate and seven-day soak. Package validation and passing tests do
@@ -91,7 +91,7 @@ for the exact claim boundaries.
 
 | Host | Integration | Distribution boundary |
 |------|-------------|-----------------------|
-| OpenClaw | Native TypeScript lifecycle adapter and Skill Workshop promotion gate | v0.2.2 prerelease |
+| OpenClaw | Native TypeScript lifecycle adapter and Skill Workshop promotion gate | v0.3.0 prerelease |
 | Hermes Agent | Native Python plugin and isolated `skill_manage` flow | v0.3.0 package |
 | Antigravity | Native plugin manifest with lifecycle hooks and skills | v0.3.0 package |
 | ChatGPT / Codex | Agent Plugins 1.0 package with portable skills | Local marketplace distribution |

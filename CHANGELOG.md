@@ -1,11 +1,13 @@
 # Changelog
 
-## 0.3.0 — 2026-09-15 (unreleased prerelease candidate)
+## 0.3.0 — 2026-09-29 (prerelease)
 
-- Replace the legacy Hermes installer with a native Hermes 0.21 Python plugin.
-- Register four lifecycle hooks, five native plugin ESRA skills, `/esra`, the
-  `hermes esra` CLI, and a constrained controller tool.
+- Consolidate all host distributions into a unified release with deterministic archives and SHA256 checksums across OpenAI/Codex, Claude Code, Hermes Agent, OpenClaw, and Google Antigravity.
+- Add Google Antigravity adapter with lifecycle hooks and portable skills integration.
+- Replace legacy Hermes installer with a native Hermes 0.21 Python plugin, four lifecycle hooks, five native plugin ESRA skills, `/esra`, `hermes esra` CLI, and constrained controller tool.
 - Apply approved candidates through Hermes `skill_manage` with a one-time token.
+- Add privacy-bounded MCP evidence receipts for GitHub, security, browser-pilot, and SOFA evidence.
+- Harden review recursion, completion evidence, and terminal candidate retention.
 
 ## 0.2.2 — 2026-09-15 (prerelease)
 
