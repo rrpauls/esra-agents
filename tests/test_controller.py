@@ -5,7 +5,14 @@ import unittest
 from datetime import timedelta
 from pathlib import Path
 
-from runtime.esra_controller import Controller, atomic_json, digest, now, redact_excerpts
+from runtime.esra_controller import (
+    Controller,
+    atomic_json,
+    digest,
+    now,
+    redact_excerpts,
+    safe_relative,
+)
 
 
 SKILL_V1 = """---
@@ -278,6 +285,27 @@ class ControllerTests(unittest.TestCase):
         candidate = self.proposal()
         self.assertEqual(0o700, self.state.stat().st_mode & 0o777)
         self.assertEqual(0o600, self.controller.candidate_path(candidate["candidate_id"]).stat().st_mode & 0o777)
+
+    def test_safe_relative_path_traversal_and_backslashes(self):
+        self.assertEqual("SKILL.md", safe_relative("SKILL.md"))
+        self.assertEqual("scripts/helper.py", safe_relative("scripts/helper.py"))
+        self.assertEqual("nested/dir/file.txt", safe_relative("nested/dir/file.txt"))
+
+        invalid_cases = [
+            "..\\evil",
+            "nested\\file.txt",
+            "\\absolute",
+            "../outside",
+            "foo/../../bar",
+            "/absolute/path",
+            "",
+            ".",
+            "foo/..",
+        ]
+        for candidate in invalid_cases:
+            with self.subTest(candidate=candidate):
+                with self.assertRaises(ValueError):
+                    safe_relative(candidate)
 
 
 if __name__ == "__main__":

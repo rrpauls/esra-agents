@@ -102,6 +102,8 @@ def safe_id(value: str, label: str = "identifier") -> str:
 
 
 def safe_relative(value: str) -> str:
+    if "\\" in value:
+        raise ValueError(f"unsafe relative path: {value!r}")
     path = PurePosixPath(value)
     if path.is_absolute() or not path.parts or any(part in {"", ".", ".."} for part in path.parts):
         raise ValueError(f"unsafe relative path: {value!r}")
