@@ -111,7 +111,7 @@ def safe_relative(value: str) -> str:
 
 
 def refuse_symlink(path: Path) -> None:
-    if path.exists() and path.is_symlink():
+    if path.is_symlink():
         raise ValueError(f"refusing symlinked path: {path}")
 
 

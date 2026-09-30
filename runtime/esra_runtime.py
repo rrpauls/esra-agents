@@ -75,7 +75,7 @@ def resolve_data_dir(host: str, override: str | None = None) -> Path:
 
 
 def _refuse_symlink(path: Path) -> None:
-    if path.exists() and path.is_symlink():
+    if path.is_symlink():
         raise ValueError(f"refusing symlinked path: {path}")
 
 
