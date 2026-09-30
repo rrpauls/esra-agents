@@ -22,7 +22,18 @@ differences in `adapters/` and `distributions/`.
 - Structural changes require a short proposal in `docs/oversight/` before code
   changes.
 
-## Verification
+## Release requirements
+
+Every GitHub release, including prereleases, must include validated builds for
+every host supported by that tag and `SHA256SUMS`. Run the tagged
+`scripts/build_distributions.py` and `scripts/validate_distributions.py`; attach
+all generated ZIPs and the checksum file, including `esra-agents-skills.zip`
+with individual skill ZIPs, Markdown files, and inner checksums. The OpenAI
+package is `esra-agents-openai.zip`. Never attach builds from another
+revision to an older release. When adding a host, update the builder and
+validator so future releases include it automatically.
+
+## Verification commands
 
 Run from the repository root:
 

@@ -2,6 +2,46 @@
 
 Use a tagged release for reproducibility. Verify `SHA256SUMS` before installing.
 
+## Choose a download
+
+| Download | Use |
+| --- | --- |
+| `esra-agents-openai.zip` | ChatGPT / Codex marketplace plugin |
+| `esra-agents-claude.zip` | Claude Code plugin |
+| `esra-agents-hermes.zip` | Hermes Agent plugin |
+| `esra-agents-openclaw.zip` | OpenClaw plugin |
+| `esra-agents-antigravity.zip` | Antigravity plugin |
+| `esra-agents-skills.zip` | Universal skill files for Gemini Web, Grok Web, and other skill importers |
+
+The universal bundle contains `zip/<skill-name>.zip` for each of the five
+skills, matching `markdown/<skill-name>.md` files, and an inner `SHA256SUMS`.
+Extract the outer bundle first. Verify its inner checksums from that directory
+with `shasum -a 256 -c SHA256SUMS`. Import only the individual skills you need.
+
+## Gemini Web
+
+Open Settings → Skills → Upload. Select an individual ZIP from the bundle's
+`zip/` directory, review it, and create the skill. Repeat for other skills.
+Each inner ZIP has `SKILL.md` at its root. You can also extract an inner ZIP
+and upload its `SKILL.md` or folder.
+
+Google documents this format in [Gemini skill upload requirements](https://support.google.com/gemini/answer/17094296?hl=en).
+Availability is rolling out and depends on account eligibility. This package
+has been validated locally; import and invocation in Gemini Web remain unverified.
+
+## Grok Web
+
+Upload an individual file from `markdown/` and ask Grok to create a reusable
+skill from those instructions. Review the saved skill before using it; repeat
+for other skills. [xAI documents file-based skill creation](https://x.ai/news/grok-skills).
+ZIP import structure is not specified there, so Grok ZIP compatibility and
+actual import/invocation remain unverified.
+
+These web downloads provide the shared reasoning workflows. They do not install
+the ESRA runtime, lifecycle hooks, autonomous controller, or local persistence.
+Optional runtime references in the instructions apply only when that runtime
+is separately available and authorized.
+
 ## OpenClaw 2026.9.1
 
 Install the v0.3.0 prerelease from GitHub, explicitly enable it, grant the
@@ -28,10 +68,14 @@ the apply request's `correlationId`.
 
 ## ChatGPT and Codex
 
-Extract `esra-agents-marketplace.zip`, then add its marketplace root and plugin:
+Extract `esra-agents-openai.zip`, then add its marketplace root and plugin:
+
+New builds extract to `esra-agents-openai/`. Existing releases through v0.3.0
+have had their download renamed but retain `esra-agents-marketplace/` inside;
+use that extracted directory in the command below for those releases.
 
 ```bash
-codex plugin marketplace add /absolute/path/to/esra-agents-marketplace
+codex plugin marketplace add /absolute/path/to/esra-agents-openai
 codex plugin add esra-agents@esra-agents
 ```
 
@@ -85,4 +129,3 @@ unzip -d ~/.gemini/config/plugins/esra-agents /absolute/path/to/esra-agents-anti
 ```
 
 Antigravity natively discovers the portable `skills/` folder and `plugin.json`. The included `hooks.json` maps Antigravity's lifecycle events to the ESRA runtime to preserve your review history automatically.
-

@@ -96,6 +96,8 @@ for the exact claim boundaries.
 | Antigravity | Native plugin manifest with lifecycle hooks and skills | v0.3.0 package |
 | ChatGPT / Codex | Agent Plugins 1.0 package with portable skills | Local marketplace distribution |
 | Claude Code | Plugin manifest, portable skills, and lifecycle mapping | Claude plugin distribution |
+| Gemini Web | Portable skill upload format documented by Google | Universal skills bundle; web import unverified |
+| Grok Web | File-based custom skill creation documented by xAI | Universal Markdown files; web import unverified |
 
 Web-only clients receive the portable guidance available to them, not local
 Python hooks or filesystem persistence. Use a tagged release and verify

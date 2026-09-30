@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Harden state, output, snapshot, installer, and packaging paths against
+  traversal, symlinks, and hardlinked output overwrites; validate ZIP members.
+- Rename the OpenAI distribution to `esra-agents-openai.zip` and add the
+  universal portable skills bundle for Gemini/Grok web import workflows.
+- Build, validate, and attach all tagged host distributions automatically on
+  GitHub release publication, with complete SHA256 checksum coverage.
+
 ## 0.3.0 — 2026-09-29 (prerelease)
 
 - Consolidate all host distributions into a unified release with deterministic archives and SHA256 checksums across OpenAI/Codex, Claude Code, Hermes Agent, OpenClaw, and Google Antigravity.
