@@ -56,24 +56,6 @@ class AdapterTests(unittest.TestCase):
             set(adapter["hooks"]),
         )
 
-    def test_root_hook_files_match_adapter_sources(self):
-        """Root copies must be byte-identical to canonical adapter sources."""
-        sync_pairs = {
-            "hooks.json": "adapters/antigravity/hooks.json",
-            "hooks/hooks.json": "adapters/claude/hooks.json",
-            ".claude-plugin/plugin.json": "adapters/claude/plugin.json",
-        }
-        for root_copy, canonical in sync_pairs.items():
-            with self.subTest(root_copy=root_copy, canonical=canonical):
-                root_path = ROOT / root_copy
-                canonical_path = ROOT / canonical
-                self.assertTrue(root_path.is_file(), f"missing root copy: {root_copy}")
-                self.assertTrue(canonical_path.is_file(), f"missing canonical: {canonical}")
-                self.assertEqual(
-                    root_path.read_bytes(),
-                    canonical_path.read_bytes(),
-                    f"{root_copy} is out of sync with {canonical}",
-                )
 
     def test_antigravity_root_hooks_are_valid_format(self):
         """Root hooks.json must be valid Antigravity lifecycle hooks."""

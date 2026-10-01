@@ -24,23 +24,20 @@ differences in `adapters/` and `distributions/`.
 
 ## Root-level hook and manifest files
 
-The repository is a multi-host monorepo. Canonical hook and manifest sources
-live under `adapters/<host>/`. Because each host discovers hooks at
-host-specific root-relative paths, the repository also keeps **root-level
-copies** so that a direct `git clone` installs working hooks without running the
-build system.
+The repository is a multi-host monorepo. Antigravity and Claude Code require
+hook and manifest files at specific root-relative paths; those root-level files
+**are the canonical sources** — there are no adapter copies for these hosts.
 
-| Host | Canonical source | Root copy (git-clone discovery) |
-|------|------------------|---------------------------------|
-| Antigravity | `adapters/antigravity/hooks.json` | `hooks.json` |
-| Claude Code | `adapters/claude/hooks.json` | `hooks/hooks.json` |
-| Claude Code | `adapters/claude/plugin.json` | `.claude-plugin/plugin.json` |
-| OpenAI/Codex | `adapters/openai/hooks.json` | _(discovered via `plugin.json` `extensions.com.openai.hooks`)_ |
+| Host | Canonical file | How it's discovered |
+|------|---------------|---------------------|
+| Antigravity | `hooks.json` | Plugin root |
+| Claude Code | `.claude-plugin/plugin.json`, `hooks/hooks.json` | Standard Claude plugin paths |
+| OpenAI/Codex | `adapters/openai/hooks.json` | `plugin.json` `extensions.com.openai.hooks` reference |
+| Hermes Agent | `adapters/hermes/` | `install.sh` copies into `$HERMES_HOME` |
+| OpenClaw | `adapters/openclaw/` | Native TypeScript adapter |
 
-**Invariant**: root copies must always be byte-identical to their canonical
-adapter sources. When you edit an adapter hook or manifest, update the
-corresponding root copy. `scripts/validate_plugin.py` and `tests/test_adapters.py`
-enforce this invariant automatically.
+Edit the file at the path shown — there is no second copy to keep in sync.
+`scripts/validate_plugin.py` confirms each host file exists on every run.
 
 ## Installing from a repository link
 

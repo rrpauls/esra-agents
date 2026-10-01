@@ -2,7 +2,7 @@
   "implementation": "esra-agents",
   "implementation_version": "0.3.0",
   "protocol_version": "1.2",
-  "runtime": "OpenAI, Claude Code, Antigravity, OpenClaw 2026.9.1, and Hermes Agent 0.21 adapters",
+  "runtime": "OpenAI, Claude Code, Antigravity, OpenClaw, and Hermes Agent adapters",
   "capabilities": {
     "cycle_review": {
       "status": "implemented",
