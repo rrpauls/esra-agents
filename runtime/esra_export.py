@@ -140,7 +140,8 @@ def write_jsonl(events: Iterable[dict[str, Any]], output: str) -> None:
         sys.stdout.write(encoded)
         return
     path = Path(output)
-    descriptor = secure_open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = secure_open(path, flags)
     with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
         handle.write(encoded)
 
