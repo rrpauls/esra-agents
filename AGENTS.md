@@ -22,6 +22,45 @@ differences in `adapters/` and `distributions/`.
 - Structural changes require a short proposal in `docs/oversight/` before code
   changes.
 
+## Root-level hook and manifest files
+
+The repository is a multi-host monorepo. Canonical hook and manifest sources
+live under `adapters/<host>/`. Because each host discovers hooks at
+host-specific root-relative paths, the repository also keeps **root-level
+copies** so that a direct `git clone` installs working hooks without running the
+build system.
+
+| Host | Canonical source | Root copy (git-clone discovery) |
+|------|------------------|---------------------------------|
+| Antigravity | `adapters/antigravity/hooks.json` | `hooks.json` |
+| Claude Code | `adapters/claude/hooks.json` | `hooks/hooks.json` |
+| Claude Code | `adapters/claude/plugin.json` | `.claude-plugin/plugin.json` |
+| OpenAI/Codex | `adapters/openai/hooks.json` | _(discovered via `plugin.json` `extensions.com.openai.hooks`)_ |
+
+**Invariant**: root copies must always be byte-identical to their canonical
+adapter sources. When you edit an adapter hook or manifest, update the
+corresponding root copy. `scripts/validate_plugin.py` and `tests/test_adapters.py`
+enforce this invariant automatically.
+
+## Installing from a repository link
+
+When a user pastes a link to this repository
+(`https://github.com/rrpauls/esra-agents`) into a chat, determine which host
+environment you are running in and install accordingly:
+
+| Environment | Preferred action |
+|-------------|-----------------|
+| **Antigravity** | Download `esra-agents-antigravity.zip` from the [latest release](https://github.com/rrpauls/esra-agents/releases/latest), extract into `~/.gemini/config/plugins/esra-agents/`. If downloading fails, `git clone` works too — hooks are at the repo root. |
+| **Claude Code** | Download `esra-agents-claude.zip` from the latest release. If cloning, hooks are at `hooks/hooks.json` and the manifest at `.claude-plugin/plugin.json`. |
+| **ChatGPT / Codex** | Download `esra-agents-openai.zip`. For git clone, `plugin.json` already references `./adapters/openai/hooks.json`. |
+| **Hermes Agent** | Download `esra-agents-hermes.zip` and run `install.sh`. |
+| **OpenClaw** | Download `esra-agents-openclaw.zip`. |
+| **Gemini Web / Grok Web** | Download `esra-agents-skills.zip` for portable skill import. |
+
+Always prefer the ZIP release build for a clean, validated installation.
+Fall back to `git clone` only when release downloads are unavailable; hooks are
+committed at the expected root-relative paths for every host that uses them.
+
 ## Release requirements
 
 Every GitHub release, including prereleases, must include validated builds for
