@@ -54,6 +54,21 @@ def validate() -> list[str]:
         errors.append("OpenClaw manifest must identify esra-agents v0.3.0")
     if package.get("openclaw", {}).get("extensions") != ["./adapters/openclaw/src/index.ts"]:
         errors.append("package.json must expose the native OpenClaw entry")
+    # Root-level hook and manifest copies must be byte-identical to adapter sources.
+    root_sync = {
+        "hooks.json": "adapters/antigravity/hooks.json",
+        "hooks/hooks.json": "adapters/claude/hooks.json",
+        ".claude-plugin/plugin.json": "adapters/claude/plugin.json",
+    }
+    for root_copy, canonical in root_sync.items():
+        root_path = ROOT / root_copy
+        canonical_path = ROOT / canonical
+        if not root_path.is_file():
+            errors.append(f"missing root hook/manifest copy: {root_copy} (needed for git-clone installs)")
+        elif not canonical_path.is_file():
+            errors.append(f"missing canonical adapter source: {canonical}")
+        elif root_path.read_bytes() != canonical_path.read_bytes():
+            errors.append(f"root copy {root_copy} is out of sync with {canonical}")
     return errors
 
 

@@ -129,3 +129,29 @@ unzip -d ~/.gemini/config/plugins/esra-agents /absolute/path/to/esra-agents-anti
 ```
 
 Antigravity natively discovers the portable `skills/` folder and `plugin.json`. The included `hooks.json` maps Antigravity's lifecycle events to the ESRA runtime to preserve your review history automatically.
+
+## Installing from a repository link
+
+If you are pasting the repository URL (`https://github.com/rrpauls/esra-agents`)
+into an agent chat or installing without a tagged release download, the
+recommended approach depends on your host:
+
+| Host | Command |
+|------|---------|
+| Antigravity | `git clone https://github.com/rrpauls/esra-agents.git ~/.gemini/config/plugins/esra-agents` |
+| Claude Code | `git clone https://github.com/rrpauls/esra-agents.git /path/to/esra-agents && claude --plugin-dir /path/to/esra-agents` |
+| ChatGPT / Codex | `git clone https://github.com/rrpauls/esra-agents.git && codex plugin marketplace add /path/to/esra-agents` |
+
+The repository commits root-level hook and manifest files for every host that
+requires them at discovery paths. Hooks work immediately after clone without
+running the build system:
+
+| Host | Root hook/manifest file | Discovery |
+|------|------------------------|-----------|
+| Antigravity | `hooks.json` | Plugin root |
+| Claude Code | `.claude-plugin/plugin.json`, `hooks/hooks.json` | Standard Claude plugin paths |
+| OpenAI/Codex | `plugin.json` → `extensions.com.openai.hooks` | Agent Plugins 1.0 reference |
+
+For reproducible, validated installations always prefer tagged release ZIPs and
+verify `SHA256SUMS`.
+
