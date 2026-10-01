@@ -1,4 +1,5 @@
 import json
+import os
 import stat
 import sys
 import tempfile
@@ -12,6 +13,23 @@ import esra_export  # noqa: E402
 
 
 class ExportTests(unittest.TestCase):
+    @unittest.skipUnless(hasattr(os, "symlink"), "symlinks unavailable")
+    def test_dangling_output_symlink_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data = root / "data"
+            data.mkdir()
+            output = root / "output.jsonl"
+            target = root / "missing.jsonl"
+            output.symlink_to(target)
+
+            self.assertEqual(
+                1,
+                esra_export.main(["--data-dir", str(data), "--output", str(output)]),
+            )
+            self.assertTrue(output.is_symlink())
+            self.assertFalse(target.exists())
+
     def test_deterministic_schema_shape_and_privacy(self):
         secret = "PRIVATE-RAW-PROMPT"
         with tempfile.TemporaryDirectory() as directory:
