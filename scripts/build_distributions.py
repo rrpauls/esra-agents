@@ -93,8 +93,8 @@ def build_claude(output: Path) -> None:
         for path in source_files():
             relative = path.relative_to(ROOT).as_posix()
             add(archive, f"{archive_root}/{relative}", read_source(path), path.suffix == ".py")
-        add(archive, f"{archive_root}/.claude-plugin/plugin.json", read_source(ROOT / "adapters/claude/plugin.json"))
-        add(archive, f"{archive_root}/hooks/hooks.json", read_source(ROOT / "adapters/claude/hooks.json"))
+        add(archive, f"{archive_root}/.claude-plugin/plugin.json", read_source(ROOT / ".claude-plugin/plugin.json"))
+        add(archive, f"{archive_root}/hooks/hooks.json", read_source(ROOT / "hooks/hooks.json"))
 
 
 def build_hermes(output: Path) -> None:
@@ -144,7 +144,7 @@ def build_antigravity(output: Path) -> None:
         for path in source_files():
             relative = path.relative_to(ROOT).as_posix()
             add(archive, f"{archive_root}/{relative}", read_source(path), path.suffix == ".py")
-        add(archive, f"{archive_root}/hooks.json", read_source(ROOT / "adapters/antigravity/hooks.json"))
+        add(archive, f"{archive_root}/hooks.json", read_source(ROOT / "hooks.json"))
 
 
 def build_portable_skills(output: Path) -> None:
