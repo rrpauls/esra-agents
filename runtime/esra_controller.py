@@ -21,6 +21,11 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterator
 
+try:
+    from .esra_paths import refuse_symlink, secure_dir, secure_open
+except ImportError:
+    from esra_paths import refuse_symlink, secure_dir, secure_open
+
 SCHEMA_VERSION = "1.0.0"
 PROTOCOL_VERSION = "1.2"
 SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$")
@@ -102,24 +107,18 @@ def safe_id(value: str, label: str = "identifier") -> str:
 
 
 def safe_relative(value: str) -> str:
-    if "\\" in value:
+    if not isinstance(value, str) or "\\" in value or ":" in value or "\x00" in value:
         raise ValueError(f"unsafe relative path: {value!r}")
     path = PurePosixPath(value)
-    if path.is_absolute() or not path.parts or any(part in {"", ".", ".."} for part in path.parts):
+    if path.is_absolute() or not path.parts or any(part in {"", ".", ".."} or part.endswith((".", " ")) for part in value.split("/")):
         raise ValueError(f"unsafe relative path: {value!r}")
     return path.as_posix()
 
 
-def refuse_symlink(path: Path) -> None:
-    if path.is_symlink():
-        raise ValueError(f"refusing symlinked path: {path}")
-
-
-def secure_dir(path: Path) -> Path:
-    refuse_symlink(path)
-    path.mkdir(mode=0o700, parents=True, exist_ok=True)
-    path.chmod(0o700)
-    return path
+def refuse_linked_tree(root: Path) -> None:
+    refuse_symlink(root)
+    for path in root.rglob("*"):
+        refuse_symlink(path)
 
 
 def atomic_json(path: Path, value: Any) -> None:
@@ -149,7 +148,7 @@ def append_jsonl(path: Path, value: dict[str, Any]) -> None:
     secure_dir(path.parent)
     refuse_symlink(path)
     data = (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode()
-    fd = os.open(path, os.O_APPEND | os.O_CREAT | os.O_WRONLY, 0o600)
+    fd = secure_open(path, os.O_APPEND | os.O_CREAT | os.O_WRONLY)
     try:
         os.write(fd, data)
     finally:
@@ -235,6 +234,8 @@ class Controller:
         value = read_json(self.candidate_path(candidate_id))
         if not isinstance(value, dict):
             raise ValueError(f"unknown candidate: {candidate_id}")
+        if value.get("candidate_id") != candidate_id or not HASH64.fullmatch(str(value.get("revision_hash", ""))):
+            raise ValueError("invalid candidate identity or revision")
         return value
 
     def save_candidate(self, candidate: dict[str, Any]) -> None:
@@ -430,7 +431,10 @@ class Controller:
             if candidate.get("state") not in terminal or parse_time(candidate["updated_at"]) >= cutoff:
                 continue
             snapshot_root = self.state / "snapshots" / candidate_path.stem
+            refuse_symlink(snapshot_root)
             if snapshot_root.exists():
+                for path in snapshot_root.rglob("*"):
+                    refuse_symlink(path)
                 for path in sorted(snapshot_root.rglob("*"), reverse=True):
                     path.chmod(0o700 if path.is_dir() else 0o600)
                 snapshot_root.chmod(0o700)
@@ -637,7 +641,7 @@ class Controller:
     def _target(self, candidate: dict[str, Any]) -> Path:
         if not self.skills_root:
             raise ValueError("skills root is required for promotion")
-        root = secure_dir(self.skills_root.resolve())
+        root = secure_dir(self.skills_root)
         target = root / safe_id(candidate["target"], "target")
         refuse_symlink(target)
         if target.exists() and any(path.is_symlink() for path in target.rglob("*")):
@@ -673,6 +677,7 @@ class Controller:
             elif candidate["state"] != "staged":
                 raise ValueError(f"candidate cannot stage from {candidate['state']}")
             snapshot = secure_dir(self.state / "snapshots" / candidate_id / revision_hash)
+            refuse_linked_tree(snapshot)
             if not any(snapshot.iterdir()):
                 if target.exists():
                     shutil.copytree(target, snapshot / "skill", symlinks=False)
@@ -728,6 +733,7 @@ class Controller:
                 self.transition(candidate, "staged", "immutable snapshot creation started")
                 self.save_candidate(candidate)
             snapshot = secure_dir(self.state / "snapshots" / candidate_id / revision_hash)
+            refuse_linked_tree(snapshot)
             absent = snapshot / ".absent"
             if target.exists() and not any(snapshot.iterdir()):
                 shutil.copytree(target, snapshot / "skill", symlinks=False)
@@ -775,6 +781,12 @@ class Controller:
         target = self._target(candidate)
         snapshot = self.state / "snapshots" / candidate_id / candidate["revision_hash"]
         refuse_symlink(snapshot)
+        if not snapshot.is_dir():
+            raise ValueError("rollback snapshot is missing")
+        for path in snapshot.rglob("*"):
+            refuse_symlink(path)
+        if not (snapshot / "skill").is_dir() and not (snapshot / ".absent").is_file():
+            raise ValueError("rollback snapshot is incomplete")
         with self.lock(candidate["agent_hash"]):
             replacement = Path(tempfile.mkdtemp(prefix=f".{target.name}.esra-rollback-", dir=target.parent))
             shutil.rmtree(replacement)

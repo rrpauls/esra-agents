@@ -23,6 +23,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+try:
+    from .esra_paths import refuse_symlink as _refuse_symlink, secure_dir, secure_open
+except ImportError:
+    from esra_paths import refuse_symlink as _refuse_symlink, secure_dir, secure_open
+
 SAFE_ID = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}$")
 OUTCOMES = {"success", "partial", "failure", "blocked", "inconclusive", "not-run"}
 DECISIONS = {"adopt", "revise", "reject", "more-evidence"}
@@ -64,19 +69,9 @@ def resolve_data_dir(host: str, override: str | None = None) -> Path:
     else:
         raw = str(Path.home() / ".codex" / "esra")
     path = Path(raw).expanduser()
-    if path.exists() and path.is_symlink():
-        raise ValueError(f"refusing symlinked data directory: {path}")
-    path.mkdir(mode=0o700, parents=True, exist_ok=True)
-    try:
-        path.chmod(0o700)
-    except OSError:
-        pass
-    return path
-
-
-def _refuse_symlink(path: Path) -> None:
     if path.is_symlink():
-        raise ValueError(f"refusing symlinked path: {path}")
+        raise ValueError(f"refusing symlinked data directory: {path}")
+    return secure_dir(path)
 
 
 def atomic_json(path: Path, payload: Any) -> None:
@@ -114,7 +109,7 @@ def append_event(base: Path, kind: str, **fields: Any) -> dict[str, Any]:
         rotated = base / "events.1.jsonl"
         _refuse_symlink(rotated)
         os.replace(path, rotated)
-    descriptor = os.open(path, os.O_APPEND | os.O_CREAT | os.O_WRONLY, 0o600)
+    descriptor = secure_open(path, os.O_APPEND | os.O_CREAT | os.O_WRONLY)
     try:
         os.write(descriptor, encoded)
     finally:
@@ -439,7 +434,6 @@ def command_experiment_report(args: argparse.Namespace, base: Path) -> int:
     if not isinstance(record, dict):
         raise ValueError(f"unknown experiment: {args.id}")
     output = Path(args.output)
-    output.parent.mkdir(parents=True, exist_ok=True)
     text = (
         f"# Experiment {record['id']}\n\n"
         f"- Hypothesis: {record['hypothesis']}\n"
@@ -449,7 +443,9 @@ def command_experiment_report(args: argparse.Namespace, base: Path) -> int:
         f"- Rollback: {record['rollback']}\n"
         f"- Runs: {len(record.get('runs', []))}\n"
     )
-    output.write_text(text, encoding="utf-8")
+    descriptor = secure_open(output, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        handle.write(text)
     return 0
 
 
@@ -479,7 +475,7 @@ def command_audit(args: argparse.Namespace, base: Path) -> int:
 def command_oversight(args: argparse.Namespace, base: Path) -> int:
     proposal_id = safe_id(args.id, "proposal id")
     path = base / "oversight" / f"{proposal_id}.md"
-    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    secure_dir(path.parent)
     _refuse_symlink(path)
     text = (
         f"# {args.title}\n\n"
@@ -487,7 +483,7 @@ def command_oversight(args: argparse.Namespace, base: Path) -> int:
         f"## Evidence\n\n{args.evidence}\n\n"
         f"## Verification\n\n{args.verification}\n"
     )
-    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    descriptor = secure_open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
     with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
         handle.write(text)
     print(path)

@@ -12,6 +12,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+try:
+    from .esra_paths import secure_open
+except ImportError:
+    from esra_paths import secure_open
+
 SCHEMA_VERSION = "1.0.0"
 PROVIDERS = {"github", "codex-security", "browser-host-pilot", "sofa"}
 STATUSES = {"success", "partial", "failure", "inconclusive", "not-run"}
@@ -112,11 +117,8 @@ def write_receipt(receipt: dict[str, Any], output: str) -> None:
         sys.stdout.write(encoded)
         return
     path = Path(output)
-    if path.exists() and path.is_symlink():
-        raise ValueError(f"refusing symlinked output: {path}")
-    path.parent.mkdir(parents=True, exist_ok=True)
     flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, "O_NOFOLLOW", 0)
-    descriptor = os.open(path, flags, 0o600)
+    descriptor = secure_open(path, flags)
     try:
         os.fchmod(descriptor, 0o600)
         with os.fdopen(descriptor, "w", encoding="utf-8") as handle:

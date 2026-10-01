@@ -12,6 +12,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+try:
+    from .esra_paths import refuse_symlink, secure_open
+except ImportError:
+    from esra_paths import refuse_symlink, secure_open
+
 SCHEMA_VERSION = "1.0.0"
 PROTOCOL_VERSION = "1.2"
 ROTATED_LOGS = ("events.1.jsonl", "events.jsonl.1", "events.jsonl")
@@ -124,8 +129,7 @@ def normalize_record(record: dict[str, Any], source: str, fallback: float, imple
 
 
 def export_events(base: Path, implementation: str = "esra-agents") -> list[dict[str, Any]]:
-    if base.exists() and base.is_symlink():
-        raise ValueError(f"refusing symlinked data directory: {base}")
+    refuse_symlink(base)
     rows = [normalize_record(record, source, fallback, implementation) for record, source, fallback in load_source_records(base)]
     return rows
 
@@ -136,10 +140,7 @@ def write_jsonl(events: Iterable[dict[str, Any]], output: str) -> None:
         sys.stdout.write(encoded)
         return
     path = Path(output)
-    if path.exists() and path.is_symlink():
-        raise ValueError(f"refusing symlinked output: {path}")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    descriptor = secure_open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
     with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
         handle.write(encoded)
 

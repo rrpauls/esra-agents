@@ -57,5 +57,46 @@ class AdapterTests(unittest.TestCase):
         )
 
 
+    def test_antigravity_root_hooks_are_valid_format(self):
+        """Root hooks.json must be valid Antigravity lifecycle hooks."""
+        hooks = json.loads((ROOT / "hooks.json").read_text())
+        self.assertIn("esra-lifecycle", hooks)
+        lifecycle = hooks["esra-lifecycle"]
+        self.assertIn("PreInvocation", lifecycle)
+        self.assertIn("Stop", lifecycle)
+        for event in ("PreInvocation", "Stop"):
+            handlers = lifecycle[event]
+            self.assertIsInstance(handlers, list)
+            self.assertTrue(len(handlers) > 0)
+            for handler in handlers:
+                self.assertEqual("command", handler.get("type", "command"))
+                self.assertIn("esra_hook.py", handler["command"])
+                self.assertIn("--host antigravity", handler["command"])
+
+    def test_claude_root_hooks_are_valid_format(self):
+        """Root hooks/hooks.json must be valid Claude Code hooks."""
+        data = json.loads((ROOT / "hooks/hooks.json").read_text())
+        self.assertIn("hooks", data)
+        hooks = data["hooks"]
+        for event in ("SessionStart", "UserPromptSubmit", "Stop", "SessionEnd"):
+            self.assertIn(event, hooks)
+            groups = hooks[event]
+            self.assertIsInstance(groups, list)
+            for group in groups:
+                self.assertIn("hooks", group)
+                for handler in group["hooks"]:
+                    self.assertIn("esra_hook.py", handler["command"])
+                    self.assertIn("--host claude", handler["command"])
+
+    def test_openai_hooks_referenced_in_plugin_json(self):
+        """OpenAI hooks path in plugin.json must resolve to an existing file."""
+        plugin = json.loads((ROOT / "plugin.json").read_text())
+        hook_ref = plugin["extensions"]["com.openai"]["hooks"]
+        hook_path = ROOT / hook_ref.removeprefix("./")
+        self.assertTrue(hook_path.is_file(), f"hook ref {hook_ref} does not resolve")
+        hooks = json.loads(hook_path.read_text())
+        self.assertIn("hooks", hooks)
+
+
 if __name__ == "__main__":
     unittest.main()
