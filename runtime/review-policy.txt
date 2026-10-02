@@ -1,0 +1,3 @@
+{
+  "forbidden_text_pattern": "(?:requires_env|api[_-]?key|credential|authorization:|install[_ -]?hook|rm\\s+-rf|mkfs\\b|shutdown\\b|curl\\b.*\\|\\s*(?:sh|bash)|wget\\b.*\\|\\s*(?:sh|bash))"
+}

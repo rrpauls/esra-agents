@@ -1,0 +1,482 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-02",
+  "channels": {
+    "stable": "stable",
+    "edge": "main",
+    "immutable": "tag-or-sha"
+  },
+  "artifacts": {
+    "esra-agents-openai.zip": {
+      "kind": "marketplace",
+      "root": "esra-agents-openai/plugins/esra-agents",
+      "required_files": [
+        "plugin.json",
+        ".codex-plugin/plugin.json",
+        "adapters/openai/hooks.json",
+        "runtime/esra_runtime.py",
+        "VERSION"
+      ]
+    },
+    "esra-agents-openai-plugin.zip": {
+      "kind": "plugin",
+      "root": "esra-agents-openai-plugin",
+      "required_files": [
+        "plugin.json",
+        ".codex-plugin/plugin.json",
+        "adapters/openai/hooks.json",
+        "runtime/esra_runtime.py",
+        "VERSION"
+      ]
+    },
+    "esra-agents-openai-web.zip": {
+      "kind": "web",
+      "root": "esra-agents-openai-web",
+      "required_files": [
+        "plugin.json",
+        ".codex-plugin/plugin.json",
+        "VERSION"
+      ]
+    },
+    "esra-agents-claude.zip": {
+      "kind": "plugin",
+      "root": "esra-agents-claude",
+      "required_files": [
+        ".claude-plugin/plugin.json",
+        ".claude-plugin/marketplace.json",
+        "hooks/hooks.json",
+        "runtime/esra_runtime.py",
+        "VERSION"
+      ]
+    },
+    "esra-agents-claude-skills.zip": {
+      "kind": "claude-skills",
+      "root": "",
+      "required_files": [
+        "INSTALL.md",
+        "LICENSE",
+        "NOTICE",
+        "SHA256SUMS"
+      ]
+    },
+    "esra-agents-hermes.zip": {
+      "kind": "plugin",
+      "root": "esra-agents-hermes",
+      "required_files": [
+        "plugin.yaml",
+        "__init__.py",
+        "review_wakeup.py",
+        "install.sh",
+        "runtime/esra_controller.py",
+        "VERSION"
+      ]
+    },
+    "esra-agents-openclaw.zip": {
+      "kind": "plugin",
+      "root": "esra-agents-openclaw",
+      "required_files": [
+        "package.json",
+        "openclaw.plugin.json",
+        "adapters/openclaw/src/index.ts",
+        "runtime/esra_controller.py",
+        "VERSION"
+      ]
+    },
+    "esra-agents-antigravity.zip": {
+      "kind": "plugin",
+      "root": "esra-agents-antigravity",
+      "required_files": [
+        "plugin.json",
+        "hooks.json",
+        "runtime/esra_runtime.py",
+        "distribution.json",
+        "VERSION"
+      ]
+    },
+    "esra-agents-skills.zip": {
+      "kind": "gemini-skills",
+      "root": "",
+      "required_files": [
+        "INSTALL.md",
+        "LICENSE",
+        "NOTICE",
+        "SHA256SUMS"
+      ]
+    }
+  },
+  "targets": [
+    {
+      "id": "codex",
+      "host": "OpenAI",
+      "surface": "Codex / Desktop",
+      "artifact": "esra-agents-openai.zip",
+      "installation_modes": [
+        "native-marketplace",
+        "git",
+        "release-zip",
+        "local-path"
+      ],
+      "preferred_installation_mode": "native-marketplace",
+      "stable_update_mode": "manual-native",
+      "edge_update_mode": "manual-native",
+      "immutable_install_mode": "tag-or-sha",
+      "hook_capability": "runtime-dependent",
+      "runtime_capability": "local",
+      "required_manifest": ".codex-plugin/plugin.json",
+      "external_publication_requirement": "none",
+      "verification_status": "isolated native local and tracked Git marketplace/add/list/upgrade/remove; live hooks pending",
+      "sources": [
+        "https://developers.openai.com/plugins/build/plugins"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "workspace",
+      "host": "OpenAI",
+      "surface": "ChatGPT GitHub workspace marketplace",
+      "artifact": "esra-agents-openai.zip",
+      "installation_modes": [
+        "native-marketplace",
+        "git"
+      ],
+      "preferred_installation_mode": "native-marketplace",
+      "stable_update_mode": "automatic",
+      "edge_update_mode": "automatic",
+      "immutable_install_mode": "tag-or-sha",
+      "hook_capability": "runtime-dependent",
+      "runtime_capability": "environment-dependent",
+      "required_manifest": "plugin.json",
+      "external_publication_requirement": "workspace admin imports GitHub marketplace",
+      "verification_status": "official-docs; package-contract-tested; live-integration-pending",
+      "sources": [
+        "https://help.openai.com/en/articles/20001256-plugins-in-chatgpt",
+        "https://developers.openai.com/plugins/build/plugins"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "work",
+      "host": "OpenAI",
+      "surface": "ChatGPT Work runtime",
+      "artifact": "esra-agents-openai-plugin.zip",
+      "installation_modes": [
+        "release-zip",
+        "local-path"
+      ],
+      "preferred_installation_mode": "release-zip",
+      "stable_update_mode": "manual-replace",
+      "edge_update_mode": "manual-replace",
+      "immutable_install_mode": "checksummed-release",
+      "hook_capability": "runtime-dependent",
+      "runtime_capability": "environment-dependent",
+      "required_manifest": "plugin.json",
+      "external_publication_requirement": "runtime and hook trust must be available",
+      "verification_status": "official-docs; package-contract-tested; live-integration-pending",
+      "sources": [
+        "https://developers.openai.com/plugins/build/plugins"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "web",
+      "host": "OpenAI",
+      "surface": "ChatGPT Web / public directory",
+      "artifact": "esra-agents-openai-web.zip",
+      "installation_modes": [
+        "manual-upload",
+        "catalog-submission"
+      ],
+      "preferred_installation_mode": "manual-upload",
+      "stable_update_mode": "manual-replace",
+      "edge_update_mode": "manual-replace",
+      "immutable_install_mode": "checksummed-release",
+      "hook_capability": "none",
+      "runtime_capability": "none",
+      "required_manifest": "plugin.json",
+      "external_publication_requirement": "submission and review required; not published",
+      "verification_status": "official-docs; package-contract-tested; live-integration-pending",
+      "sources": [
+        "https://developers.openai.com/plugins/deploy/submission"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "api",
+      "host": "OpenAI",
+      "surface": "Agents API environments",
+      "artifact": "esra-agents-openai-plugin.zip",
+      "installation_modes": [
+        "manual-upload",
+        "local-path",
+        "release-zip"
+      ],
+      "preferred_installation_mode": "manual-upload",
+      "stable_update_mode": "manual-replace",
+      "edge_update_mode": "manual-replace",
+      "immutable_install_mode": "checksummed-release",
+      "hook_capability": "runtime-dependent",
+      "runtime_capability": "environment-dependent",
+      "required_manifest": ".codex-plugin/plugin.json",
+      "external_publication_requirement": "credentials and environment provisioning",
+      "verification_status": "official-docs; package-contract-tested; live-integration-pending",
+      "sources": [
+        "https://developers.openai.com/api/docs/guides/agents-api/tools/plugins"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "claude-code",
+      "host": "Claude",
+      "surface": "Claude Code",
+      "artifact": "esra-agents-claude.zip",
+      "installation_modes": [
+        "native-marketplace",
+        "git",
+        "local-path",
+        "release-zip"
+      ],
+      "preferred_installation_mode": "native-marketplace",
+      "stable_update_mode": "automatic-opt-in",
+      "edge_update_mode": "automatic-opt-in",
+      "immutable_install_mode": "tag-or-sha",
+      "hook_capability": "native",
+      "runtime_capability": "local",
+      "required_manifest": ".claude-plugin/plugin.json",
+      "external_publication_requirement": "none",
+      "verification_status": "native strict manifests and isolated tracked Git install/list/update/remove; live hooks pending",
+      "sources": [
+        "https://code.claude.com/docs/en/plugin-marketplaces"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "claude-web",
+      "host": "Claude",
+      "surface": "Web personal skills",
+      "artifact": "esra-agents-claude-skills.zip",
+      "installation_modes": [
+        "manual-upload"
+      ],
+      "preferred_installation_mode": "manual-upload",
+      "stable_update_mode": "manual-replace",
+      "edge_update_mode": "manual-replace",
+      "immutable_install_mode": "checksummed-release",
+      "hook_capability": "none",
+      "runtime_capability": "none",
+      "required_manifest": "<skill>/SKILL.md",
+      "external_publication_requirement": "code execution and skills enabled",
+      "verification_status": "official-docs; package-contract-tested; live-integration-pending",
+      "sources": [
+        "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "claude-org",
+      "host": "Claude",
+      "surface": "Team / Enterprise marketplace",
+      "artifact": "esra-agents-claude.zip",
+      "installation_modes": [
+        "native-marketplace",
+        "manual-upload"
+      ],
+      "preferred_installation_mode": "native-marketplace",
+      "stable_update_mode": "automatic-opt-in",
+      "edge_update_mode": "automatic-opt-in",
+      "immutable_install_mode": "checksummed-release",
+      "hook_capability": "runtime-dependent",
+      "runtime_capability": "environment-dependent",
+      "required_manifest": ".claude-plugin/marketplace.json",
+      "external_publication_requirement": "private/internal GitHub organization mirror; admin enables sync",
+      "verification_status": "official-docs; package-contract-tested; live-integration-pending",
+      "sources": [
+        "https://support.claude.com/en/articles/13837433-manage-plugins-for-your-organization"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "gemini",
+      "host": "Google",
+      "surface": "Gemini Web skills",
+      "artifact": "esra-agents-skills.zip",
+      "installation_modes": [
+        "manual-upload"
+      ],
+      "preferred_installation_mode": "manual-upload",
+      "stable_update_mode": "manual-replace",
+      "edge_update_mode": "manual-replace",
+      "immutable_install_mode": "checksummed-release",
+      "hook_capability": "none",
+      "runtime_capability": "none",
+      "required_manifest": "SKILL.md",
+      "external_publication_requirement": "eligible personal account",
+      "verification_status": "official-docs; package-contract-tested; live-integration-pending",
+      "sources": [
+        "https://support.google.com/gemini/answer/17094296?hl=en"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "grok-build",
+      "host": "xAI",
+      "surface": "Grok Build / CLI",
+      "artifact": "esra-agents-claude.zip",
+      "installation_modes": [
+        "git",
+        "native-marketplace",
+        "local-path",
+        "release-zip"
+      ],
+      "preferred_installation_mode": "git",
+      "stable_update_mode": "manual-native",
+      "edge_update_mode": "manual-native",
+      "immutable_install_mode": "tag-or-sha",
+      "hook_capability": "native",
+      "runtime_capability": "local",
+      "required_manifest": ".claude-plugin/plugin.json",
+      "external_publication_requirement": "none",
+      "verification_status": "native validate and isolated tracked Git install/discovery/update/remove; five skills and hooks discovered; live dispatch pending",
+      "sources": [
+        "https://docs.x.ai/build/features/skills-plugins-marketplaces"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "grok-web",
+      "host": "xAI",
+      "surface": "Grok Web / Bot instructions",
+      "artifact": "esra-agents-skills.zip",
+      "installation_modes": [
+        "manual-upload"
+      ],
+      "preferred_installation_mode": "manual-upload",
+      "stable_update_mode": "manual-replace",
+      "edge_update_mode": "manual-replace",
+      "immutable_install_mode": "checksummed-release",
+      "hook_capability": "none",
+      "runtime_capability": "none",
+      "required_manifest": "markdown/<skill>.md",
+      "external_publication_requirement": "account feature dependent; ZIP import unverified",
+      "verification_status": "file guidance only; persistent Bot skills and ZIP import unverified",
+      "sources": [
+        "https://x.ai/news/grok-skills"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "hermes",
+      "host": "Hermes",
+      "surface": "Agent / Desktop",
+      "artifact": "esra-agents-hermes.zip",
+      "installation_modes": [
+        "git",
+        "local-path",
+        "release-zip",
+        "catalog-submission"
+      ],
+      "preferred_installation_mode": "git",
+      "stable_update_mode": "manual-native",
+      "edge_update_mode": "automatic-opt-in",
+      "immutable_install_mode": "exact-commit",
+      "hook_capability": "native",
+      "runtime_capability": "local",
+      "required_manifest": "plugin.yaml",
+      "external_publication_requirement": "catalog and desktop catalog listing not published",
+      "verification_status": "native root/archive validation and registration; managed install/update/pin skipped: host package manager missing uv.lock",
+      "sources": [
+        "https://hermes-agent.nousresearch.com/docs/user-guide/features/plugins/"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace",
+      "channel_notes": "Native --ref accepts exact SHA only. Stable clone+adopt follows Git branch; checker may compare remote HEAD; auto_apply stable is not verified."
+    },
+    {
+      "id": "openclaw",
+      "host": "OpenClaw",
+      "surface": "Gateway / CLI",
+      "artifact": "esra-agents-openclaw.zip",
+      "installation_modes": [
+        "git",
+        "local-path",
+        "release-zip",
+        "tarball",
+        "npm",
+        "catalog-submission"
+      ],
+      "preferred_installation_mode": "git",
+      "stable_update_mode": "manual-native",
+      "edge_update_mode": "manual-native",
+      "immutable_install_mode": "tag-or-sha",
+      "hook_capability": "native",
+      "runtime_capability": "local",
+      "required_manifest": "openclaw.plugin.json",
+      "external_publication_requirement": "npm/ClawHub publication not performed",
+      "verification_status": "official-docs; package-contract-tested; live-integration-pending",
+      "sources": [
+        "https://docs.openclaw.ai/cli/plugins"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "antigravity",
+      "host": "Google",
+      "surface": "Antigravity CLI / IDE / 2.0 custom",
+      "artifact": "esra-agents-antigravity.zip",
+      "installation_modes": [
+        "local-path",
+        "release-zip"
+      ],
+      "preferred_installation_mode": "local-path",
+      "stable_update_mode": "manual-replace",
+      "edge_update_mode": "manual-replace",
+      "immutable_install_mode": "checksummed-release",
+      "hook_capability": "native",
+      "runtime_capability": "local",
+      "required_manifest": "plugin.json",
+      "external_publication_requirement": "curated marketplace not published",
+      "verification_status": "official-docs; package-contract-tested; live-integration-pending",
+      "sources": [
+        "https://antigravity.google/docs/plugins"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    },
+    {
+      "id": "generic",
+      "host": "Agent Skills",
+      "surface": "Generic consumers",
+      "artifact": "esra-agents-skills.zip",
+      "installation_modes": [
+        "manual-upload",
+        "local-path",
+        "git"
+      ],
+      "preferred_installation_mode": "manual-upload",
+      "stable_update_mode": "manual-replace",
+      "edge_update_mode": "manual-replace",
+      "immutable_install_mode": "tag-or-sha",
+      "hook_capability": "none",
+      "runtime_capability": "none",
+      "required_manifest": "SKILL.md",
+      "external_publication_requirement": "host dependent",
+      "verification_status": "official-docs; package-contract-tested; live-integration-pending",
+      "sources": [
+        "https://agentskills.io/specification"
+      ],
+      "immutable_update_mode": "pinned",
+      "archive_update_mode": "manual-replace"
+    }
+  ]
+}

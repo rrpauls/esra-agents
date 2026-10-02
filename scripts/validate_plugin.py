@@ -8,6 +8,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+try:
+    from .distribution_contract import version, validate_versions, validate_contract
+except ImportError:
+    from distribution_contract import version, validate_versions, validate_contract
 
 
 def read(relative: str) -> dict:
@@ -15,14 +20,14 @@ def read(relative: str) -> dict:
 
 
 def validate() -> list[str]:
-    errors: list[str] = []
+    errors: list[str] = validate_versions() + validate_contract()
     portable = read("plugin.json")
     codex = read(".codex-plugin/plugin.json")
     claude = read(".claude-plugin/plugin.json")
     conformance = read("esra-conformance.json")
     marketplace = read(".agents/plugins/marketplace.json")
     versions = {portable.get("version"), codex.get("version"), claude.get("version"), conformance.get("implementation_version")}
-    if versions != {"0.3.0"}:
+    if versions != {version()}:
         errors.append(f"version drift across manifests: {sorted(str(value) for value in versions)}")
     if portable.get("$schema") != "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json":
         errors.append("plugin.json does not target Agent Plugins 1.0.0")
@@ -33,8 +38,8 @@ def validate() -> list[str]:
     entry = marketplace.get("plugins", [{}])[0]
     if marketplace.get("name") != "esra-agents" or entry.get("name") != "esra-agents":
         errors.append("repository marketplace must publish esra-agents")
-    if entry.get("source", {}).get("ref") != "v0.3.0":
-        errors.append("repository marketplace must retain the latest released tag v0.3.0")
+    if entry.get("source", {}).get("ref") != "stable":
+        errors.append("repository marketplace must follow the stable channel")
     extension = portable.get("extensions", {}).get("com.openai", {})
     hook_path = str(extension.get("hooks", "")).removeprefix("./")
     if not hook_path or not (ROOT / hook_path).is_file():
@@ -50,8 +55,8 @@ def validate() -> list[str]:
         errors.append("Hermes adapter must declare its native lifecycle hook")
     openclaw = read("openclaw.plugin.json")
     package = read("package.json")
-    if openclaw.get("id") != "esra-agents" or openclaw.get("version") != "0.3.0":
-        errors.append("OpenClaw manifest must identify esra-agents v0.3.0")
+    if openclaw.get("id") != "esra-agents" or openclaw.get("version") != version():
+        errors.append("OpenClaw manifest must identify esra-agents at the canonical version")
     if package.get("openclaw", {}).get("extensions") != ["./adapters/openclaw/src/index.ts"]:
         errors.append("package.json must expose the native OpenClaw entry")
     # Root-level hook and manifest files are the single canonical source for Antigravity and Claude Code.
@@ -70,7 +75,7 @@ def main() -> int:
         print(f"ERROR: {error}")
     if errors:
         return 1
-    print("Validated portable plugin and three host adapters")
+    print("Validated canonical versions, surface contracts, manifests and hook resources")
     return 0
 
 

@@ -1,49 +1,94 @@
 {
   "implementation": "esra-agents",
-  "implementation_version": "0.3.0",
+  "implementation_version": "0.4.0",
   "protocol_version": "1.2",
-  "runtime": "OpenAI, Claude Code, Antigravity, OpenClaw, and Hermes Agent adapters",
+  "runtime": "OpenAI, Claude Code, Grok Build, Antigravity, OpenClaw, and Hermes Agent adapters",
   "capabilities": {
     "cycle_review": {
       "status": "implemented",
-      "evidence": ["skills/esra-orchestrator/SKILL.md", "tests/test_skills.py"]
+      "evidence": [
+        "skills/esra-orchestrator/SKILL.md",
+        "tests/test_skills.py"
+      ]
     },
     "evidence_logging": {
       "status": "verified",
-      "evidence": ["runtime/esra_runtime.py", "tests/test_runtime.py"]
+      "evidence": [
+        "runtime/esra_runtime.py",
+        "tests/test_runtime.py"
+      ]
     },
     "experiment_execution": {
       "status": "verified",
-      "evidence": ["runtime/esra_runtime.py", "tests/test_runtime.py"]
+      "evidence": [
+        "runtime/esra_runtime.py",
+        "tests/test_runtime.py"
+      ]
     },
     "lifecycle_event_recording": {
       "status": "verified",
-      "evidence": ["runtime/esra_hook.py", "tests/test_adapters.py", "tests/test_openclaw_plugin.py", "tests/test_hermes_plugin.py"],
+      "evidence": [
+        "runtime/esra_hook.py",
+        "tests/test_adapters.py",
+        "tests/test_openclaw_plugin.py",
+        "tests/test_hermes_plugin.py"
+      ],
       "notes": "Native import/registration was observed in isolated OpenClaw 2026.9.1 and Hermes 0.21 profiles; stable soak remains open."
     },
     "portable_cycle_event_export": {
       "status": "verified",
-      "evidence": ["runtime/esra_export.py", "tests/test_export.py"]
+      "evidence": [
+        "runtime/esra_export.py",
+        "tests/test_export.py"
+      ]
     },
     "automatic_cycle_execution": {
       "status": "implemented",
-      "evidence": ["runtime/esra_controller.py", "tests/test_controller.py", "adapters/hermes/plugin/review_wakeup.py"],
+      "evidence": [
+        "runtime/esra_controller.py",
+        "tests/test_controller.py",
+        "adapters/hermes/plugin/review_wakeup.py"
+      ],
       "notes": "Guarded review queue and cron integration are implemented; prerelease host gates and seven-day stable soak remain required."
     },
     "guarded_skill_promotion": {
       "status": "verified",
-      "evidence": ["runtime/esra_controller.py", "tests/test_controller.py", "tests/test_hermes_plugin.py", "docs/AUTONOMOUS_HOST_GATE.md"],
+      "evidence": [
+        "runtime/esra_controller.py",
+        "tests/test_controller.py",
+        "tests/test_hermes_plugin.py",
+        "docs/AUTONOMOUS_HOST_GATE.md"
+      ],
       "notes": "Verified in isolated filesystems with exact-revision tokens, snapshot, canary, and rollback. Canonical repositories and protected targets remain human-only."
     },
     "openclaw_native_plugin": {
       "status": "verified",
-      "evidence": ["openclaw.plugin.json", "adapters/openclaw/src/index.ts", "tests/test_openclaw_plugin.py", "docs/AUTONOMOUS_HOST_GATE.md"],
+      "evidence": [
+        "openclaw.plugin.json",
+        "adapters/openclaw/src/index.ts",
+        "tests/test_openclaw_plugin.py",
+        "docs/AUTONOMOUS_HOST_GATE.md"
+      ],
       "notes": "Seven typed hooks load under OpenClaw 2026.9.1 after explicit conversation-access consent."
     },
     "hermes_native_plugin": {
       "status": "implemented",
-      "evidence": ["adapters/hermes/plugin/plugin.yaml", "adapters/hermes/plugin/__init__.py", "tests/test_hermes_plugin.py"],
+      "evidence": [
+        "adapters/hermes/plugin/plugin.yaml",
+        "adapters/hermes/plugin/__init__.py",
+        "tests/test_hermes_plugin.py"
+      ],
       "notes": "Hermes 0.21 plugin doctor observed one tool and four hooks; model-backed cron runs remain a release gate."
+    },
+    "installation_contract": {
+      "status": "implemented",
+      "evidence": [
+        "distributions/targets.json",
+        "scripts/verify_installations.py",
+        "tests/test_installation_contract.py",
+        "docs/RELEASE.md"
+      ],
+      "notes": "Canonical 0.4.0 packaging candidate. Local package/CLI evidence is recorded in docs/INSTALLATION-VERIFICATION.md; external publication and unavailable live integrations remain unverified."
     }
   }
 }

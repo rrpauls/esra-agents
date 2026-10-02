@@ -1,0 +1,22 @@
+{
+  "name": "esra-agents",
+  "owner": {
+    "name": "Robert Pauls"
+  },
+  "metadata": {
+    "version": "0.4.0",
+    "description": "Portable ESRA workflows and local lifecycle adapters"
+  },
+  "plugins": [
+    {
+      "name": "esra-agents",
+      "source": {
+        "source": "github",
+        "repo": "rrpauls/esra-agents",
+        "ref": "stable"
+      },
+      "version": "0.4.0",
+      "description": "Five selective ESRA skills and observational hooks"
+    }
+  ]
+}

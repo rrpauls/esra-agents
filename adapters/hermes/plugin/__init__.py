@@ -19,7 +19,7 @@ if str(ROOT) not in sys.path:
 from runtime.esra_controller import Controller, digest  # noqa: E402
 
 logger = logging.getLogger(__name__)
-PLUGIN_VERSION = "0.3.0"
+PLUGIN_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 
 
 def _state_dir(ctx) -> Path:

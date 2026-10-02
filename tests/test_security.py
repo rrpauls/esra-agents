@@ -148,7 +148,7 @@ class FilesystemSecurityTests(unittest.TestCase):
             root = Path(temporary)
             package = root / "package"
             package.mkdir()
-            for name in ("plugin.yaml", "__init__.py", "review_wakeup.py", "esra-conformance.json"):
+            for name in ("plugin.yaml", "__init__.py", "review_wakeup.py", "esra-conformance.json", "VERSION"):
                 (package / name).write_text("fixture")
             for name in ("runtime", "skills"):
                 (package / name).mkdir()
@@ -170,6 +170,7 @@ class FilesystemSecurityTests(unittest.TestCase):
             result = subprocess.run(["sh", str(installer)], env=env, capture_output=True)
             self.assertEqual(0, result.returncode, result.stderr)
             self.assertEqual("fixture", (home / "plugins/esra-agents/review_wakeup.py").read_text())
+            self.assertEqual("fixture", (home / "plugins/esra-agents/VERSION").read_text())
 
 
 if __name__ == "__main__":

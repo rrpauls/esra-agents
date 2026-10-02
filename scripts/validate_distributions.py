@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import io
+import json
 import re
 import stat
 import tempfile
@@ -17,39 +18,14 @@ try:
 except ImportError:
     from build_distributions import ROOT, build
 
+try:
+    from .distribution_contract import contract, version
+except ImportError:
+    from distribution_contract import contract, version
+
 EXPECTED = {
-    "esra-agents-openai.zip": {
-        "esra-agents-openai/.agents/plugins/marketplace.json",
-        "esra-agents-openai/plugins/esra-agents/.codex-plugin/plugin.json",
-        "esra-agents-openai/plugins/esra-agents/plugin.json",
-    },
-    "esra-agents-claude.zip": {
-        "esra-agents-claude/.claude-plugin/plugin.json",
-        "esra-agents-claude/adapters/openai/hooks.json",
-        "esra-agents-claude/hooks/hooks.json",
-        "esra-agents-claude/runtime/esra_runtime.py",
-    },
-    "esra-agents-hermes.zip": {
-        "esra-agents-hermes/install.sh",
-        "esra-agents-hermes/plugin.yaml",
-        "esra-agents-hermes/__init__.py",
-        "esra-agents-hermes/review_wakeup.py",
-        "esra-agents-hermes/adapters/hermes/adapter.json",
-        "esra-agents-hermes/runtime/esra_controller.py",
-        "esra-agents-hermes/runtime/esra_runtime.py",
-    },
-    "esra-agents-openclaw.zip": {
-        "esra-agents-openclaw/package.json",
-        "esra-agents-openclaw/openclaw.plugin.json",
-        "esra-agents-openclaw/adapters/openclaw/src/index.ts",
-        "esra-agents-openclaw/runtime/esra_controller.py",
-    },
-    "esra-agents-antigravity.zip": {
-        "esra-agents-antigravity/hooks.json",
-        "esra-agents-antigravity/plugin.json",
-        "esra-agents-antigravity/runtime/esra_runtime.py",
-    },
-    "esra-agents-skills.zip": {"INSTALL.md", "LICENSE", "NOTICE", "SHA256SUMS"},
+    name: {f"{value['root']}/{p}" if value["root"] else p for p in value["required_files"]}
+    for name, value in contract()["artifacts"].items()
 }
 
 
@@ -87,7 +63,7 @@ def check_checksums(manifest: str, files: dict[str, bytes]) -> list[str]:
     return errors
 
 
-def validate_portable_skills(archive: ZipFile) -> list[str]:
+def validate_portable_skills(archive: ZipFile, *, claude: bool = False) -> list[str]:
     errors = []
     expected = {"INSTALL.md", "LICENSE", "NOTICE", "SHA256SUMS"}
     for source in sorted((ROOT / "skills").glob("*/SKILL.md")):
@@ -106,9 +82,10 @@ def validate_portable_skills(archive: ZipFile) -> list[str]:
                     errors.extend(member_errors)
                     continue
                 names = skill.namelist()
-                if "SKILL.md" not in names:
+                entrypoint = f"{name}/SKILL.md" if claude else "SKILL.md"
+                if entrypoint not in names:
                     errors.append(f"{name}: missing root SKILL.md")
-                elif skill.read("SKILL.md") != source.read_bytes():
+                elif skill.read(entrypoint) != source.read_bytes():
                     errors.append(f"portable ZIP differs from source: {name}")
                 allowed = {"LICENSE", "NOTICE"} | {
                     path.relative_to(source.parent).as_posix()
@@ -116,6 +93,8 @@ def validate_portable_skills(archive: ZipFile) -> list[str]:
                     and not any(part.startswith(".") or part == "__pycache__" for part in path.relative_to(source.parent).parts)
                     and path.suffix != ".pyc"
                 }
+                if claude:
+                    allowed = {f"{name}/{p}" for p in allowed}
                 if set(names) != allowed or len(names) != len(set(names)):
                     errors.append(f"{name}: unexpected or missing skill files")
                 if skill.testzip():
@@ -129,6 +108,60 @@ def validate_portable_skills(archive: ZipFile) -> list[str]:
     if "SHA256SUMS" in archive.namelist():
         files = {name: archive.read(name) for name in archive.namelist() if name != "SHA256SUMS"}
         errors.extend(check_checksums(archive.read("SHA256SUMS").decode(), files))
+    return errors
+
+
+def validate_package(name: str, archive: ZipFile) -> list[str]:
+    errors = []
+    spec = contract()["artifacts"][name]
+    root = spec["root"]
+    names = set(archive.namelist())
+    if name != "esra-agents-openai.zip" and any(not p.startswith(root + "/") for p in names):
+        errors.append(f"{name}: plugin root has siblings")
+    generic_roots = {p.rsplit("/", 1)[0] for p in names if p.endswith("/plugin.json")
+                     and "/.codex-plugin/" not in p and "/.claude-plugin/" not in p}
+    if generic_roots and generic_roots != {root}:
+        errors.append(f"{name}: ambiguous plugin roots")
+    def read(relative):
+        return archive.read(f"{root}/{relative}")
+    if read("VERSION").decode().strip() != version():
+        errors.append(f"{name}: canonical version mismatch")
+    for source in (ROOT / "skills").glob("*/SKILL.md"):
+        relative = source.relative_to(ROOT).as_posix()
+        if f"{root}/{relative}" not in names or read(relative) != source.read_bytes():
+            errors.append(f"{name}: missing or altered canonical skill {source.parent.name}")
+    for path in ("plugin.json", ".codex-plugin/plugin.json", ".claude-plugin/plugin.json", "package.json", "openclaw.plugin.json", "distribution.json"):
+        if f"{root}/{path}" not in names:
+            continue
+        manifest = json.loads(read(path))
+        if name == "esra-agents-antigravity.zip" and path == "plugin.json":
+            if set(manifest) != {"name", "description"} or manifest["name"] != "esra-agents" or not isinstance(manifest["description"], str):
+                errors.append("Antigravity native manifest violates closed schema")
+        elif manifest.get("version") != version():
+            errors.append(f"{name}: version drift in {path}")
+        if path in {"plugin.json", ".codex-plugin/plugin.json"}:
+            extension = manifest.get("extensions", {}).get("com.openai", manifest)
+            hooks = extension.get("hooks")
+            if hooks and (not isinstance(hooks, str) or not hooks.startswith("./") or f"{root}/{hooks[2:]}" not in names):
+                errors.append(f"{name}: unresolved hook reference")
+    if name == "esra-agents-hermes.zip":
+        if f"version: {version()}\n" not in read("plugin.yaml").decode():
+            errors.append("Hermes manifest version drift")
+    if name == "esra-agents-claude.zip":
+        market = json.loads(read(".claude-plugin/marketplace.json"))
+        if market["metadata"]["version"] != version() or market["plugins"][0]["version"] != version():
+            errors.append("Claude archive marketplace version drift")
+        if "${CLAUDE_PLUGIN_ROOT}/runtime/esra_hook.py" not in read("hooks/hooks.json").decode():
+            errors.append("Claude archive hooks do not resolve from the plugin root")
+    if spec["kind"] == "web":
+        allowed = {"plugin.json", ".codex-plugin/plugin.json", "VERSION", "LICENSE", "NOTICE", "INSTALL.md"}
+        if any(p[len(root)+1:] not in allowed and not p[len(root)+1:].startswith("skills/") for p in names):
+            errors.append("web package contains runtime/hooks or unexpected files")
+        for path in ("plugin.json", ".codex-plugin/plugin.json"):
+            manifest = json.loads(read(path))
+            extension = manifest.get("extensions", {}).get("com.openai", manifest)
+            if "hooks" in extension or "apps" in extension or "Local automation" in extension.get("interface", {}).get("capabilities", []):
+                errors.append("web manifest advertises local hooks/apps/runtime")
     return errors
 
 
@@ -148,8 +181,10 @@ def validate(directory: Path) -> list[str]:
                 names = set(archive.namelist())
                 missing = required - names
                 errors.extend(f"{name}: missing {item}" for item in sorted(missing))
-                if name == "esra-agents-skills.zip":
-                    errors.extend(validate_portable_skills(archive))
+                if name in {"esra-agents-skills.zip", "esra-agents-claude-skills.zip"}:
+                    errors.extend(validate_portable_skills(archive, claude="claude" in name))
+                else:
+                    errors.extend(validate_package(name, archive))
                 if any("__pycache__" in item or item.endswith(".pyc") for item in names):
                     errors.append(f"{name}: contains Python cache artifacts")
                 if any("build_distributions.py" in item for item in names):
@@ -157,13 +192,13 @@ def validate(directory: Path) -> list[str]:
                 bad = archive.testzip()
                 if bad:
                     errors.append(f"{name}: corrupt member {bad}")
-        except BadZipFile:
-            errors.append(f"{name}: invalid ZIP")
+        except (BadZipFile, OSError, ValueError, KeyError, UnicodeDecodeError) as exc:
+            errors.append(f"{name}: invalid package: {exc}")
     sums = directory / "SHA256SUMS"
     if not sums.is_file():
         errors.append("missing SHA256SUMS")
     else:
-        files = {name: (directory / name).read_bytes() for name in EXPECTED if (directory / name).is_file()}
+        files = {path.name: path.read_bytes() for path in directory.iterdir() if path.is_file() and path.name != "SHA256SUMS"}
         errors.extend(check_checksums(sums.read_text(encoding="utf-8"), files))
     return errors
 

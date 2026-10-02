@@ -22,41 +22,31 @@ differences in `adapters/` and `distributions/`.
 - Structural changes require a short proposal in `docs/oversight/` before code
   changes.
 
-## Root-level hook and manifest files
+## Host packaging and installation
 
-The repository is a multi-host monorepo. Antigravity and Claude Code require
-hook and manifest files at specific root-relative paths; those root-level files
-**are the canonical sources** — there are no adapter copies for these hosts.
+Canonical host-neutral skills live in skills/. Host manifests and hooks remain
+at native discovery paths. Claude uses .claude-plugin/ and hooks/hooks.json;
+OpenAI uses adapters/openai/hooks.json. Hermes root plugin.yaml is synchronized
+from adapters/hermes/plugin/plugin.yaml and __init__.py delegates to its adapter.
+Antigravity hooks.json is canonical, but its closed native manifest is generated:
+the generic repository-root plugin.json is not a native Antigravity plugin.
 
-| Host | Canonical file | How it's discovered |
-|------|---------------|---------------------|
-| Antigravity | `hooks.json` | Plugin root |
-| Claude Code | `.claude-plugin/plugin.json`, `hooks/hooks.json` | Standard Claude plugin paths |
-| OpenAI/Codex | `adapters/openai/hooks.json` | `plugin.json` `extensions.com.openai.hooks` reference |
-| Hermes Agent | `adapters/hermes/` | `install.sh` copies into `$HERMES_HOME` |
-| OpenClaw | `adapters/openclaw/` | Native TypeScript adapter |
+Use distributions/targets.json and INSTALL.md to select the exact host surface.
+Prefer host-managed Git/marketplace installations where supported. Stable follows
+stable, edge follows main, immutable follows a tag/full SHA. Local ZIPs are manual
+replacement. Never assume a catalog ref overrides a plugin source ref. Stage
+alternate catalogs with scripts/sync_manifests.py --stage-marketplace.
 
-Edit the file at the path shown — there is no second copy to keep in sync.
-`scripts/validate_plugin.py` confirms each host file exists on every run.
+Web-only packages deploy portable workflows without ESRA local runtime/hooks.
+Claude Web and Gemini require different individual skill ZIP layouts. Grok Build
+reuses Claude compatibility; Grok Web/Bot is a separate limited surface. No
+background ESRA updater or unrequested auto_apply setting is permitted.
 
-## Installing from a repository link
-
-When a user pastes a link to this repository
-(`https://github.com/rrpauls/esra-agents`) into a chat, determine which host
-environment you are running in and install accordingly:
-
-| Environment | Preferred action |
-|-------------|-----------------|
-| **Antigravity** | Download `esra-agents-antigravity.zip` from the [latest release](https://github.com/rrpauls/esra-agents/releases/latest), extract into `~/.gemini/config/plugins/esra-agents/`. If downloading fails, `git clone` works too — hooks are at the repo root. |
-| **Claude Code** | Download `esra-agents-claude.zip` from the latest release. If cloning, hooks are at `hooks/hooks.json` and the manifest at `.claude-plugin/plugin.json`. |
-| **ChatGPT / Codex** | Download `esra-agents-openai.zip`. For git clone, `plugin.json` already references `./adapters/openai/hooks.json`. |
-| **Hermes Agent** | Download `esra-agents-hermes.zip` and run `install.sh`. |
-| **OpenClaw** | Download `esra-agents-openclaw.zip`. |
-| **Gemini Web / Grok Web** | Download `esra-agents-skills.zip` for portable skill import. |
-
-Always prefer the ZIP release build for a clean, validated installation.
-Fall back to `git clone` only when release downloads are unavailable; hooks are
-committed at the expected root-relative paths for every host that uses them.
+VERSION is the only release version source. Run scripts/sync_manifests.py after a
+bump; CI checks manifest and generated-matrix agreement. Antigravity metadata is
+separate from its native closed manifest. Native validators, package tests and
+actual runtime behavior are separate evidence levels. Do not modify user profiles
+for testing; use scripts/verify_installations.py and disposable profiles.
 
 ## Release requirements
 
@@ -64,19 +54,23 @@ Every GitHub release, including prereleases, must include validated builds for
 every host supported by that tag and `SHA256SUMS`. Run the tagged
 `scripts/build_distributions.py` and `scripts/validate_distributions.py`; attach
 all generated ZIPs and the checksum file, including `esra-agents-skills.zip`
-with individual skill ZIPs, Markdown files, and inner checksums. The OpenAI
-package is `esra-agents-openai.zip`. Never attach builds from another
+with individual skill ZIPs, Markdown files, and inner checksums. Keep the OpenAI
+marketplace, direct plugin and web-safe artifacts separate, and include dedicated
+Claude Web skill packaging. Follow docs/RELEASE.md for controlled stable promotion. Never attach builds from another
 revision to an older release. When adding a host, update the builder and
 validator so future releases include it automatically.
 
 ## Verification commands
 
-Run from the repository root:
+Run from the repository root using its virtual environment. Create it with
+`python3 -m venv .venv` only if no project environment exists:
 
 ```bash
-python3 scripts/validate_skills.py
-python3 scripts/validate_plugin.py
-python3 -m unittest discover -s tests -v
-python3 scripts/build_distributions.py
-python3 scripts/validate_distributions.py
+.venv/bin/python scripts/sync_manifests.py --check
+.venv/bin/python scripts/validate_skills.py
+.venv/bin/python scripts/validate_plugin.py
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python scripts/build_distributions.py
+.venv/bin/python scripts/validate_distributions.py
+.venv/bin/python scripts/verify_installations.py
 ```
