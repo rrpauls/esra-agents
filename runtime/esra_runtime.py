@@ -59,11 +59,15 @@ def resolve_data_dir(host: str, override: str | None = None) -> Path:
         raw = os.environ["PLUGIN_DATA"]
     elif host == "claude" and os.environ.get("CLAUDE_PLUGIN_DATA"):
         raw = os.environ["CLAUDE_PLUGIN_DATA"]
+    elif host == "grok" and os.environ.get("GROK_PLUGIN_DATA"):
+        raw = os.environ["GROK_PLUGIN_DATA"]
     elif host == "hermes":
         home = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes"))
         raw = str(home / "esra" / "data")
     elif host == "claude":
         raw = str(Path.home() / ".claude" / "esra")
+    elif host == "grok":
+        raw = str(Path.home() / ".grok" / "esra")
     elif host == "antigravity":
         raw = str(Path.home() / ".gemini" / "antigravity" / "esra")
     else:
@@ -492,7 +496,7 @@ def command_oversight(args: argparse.Namespace, base: Path) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Host-neutral ESRA evidence and experiment runtime")
-    parser.add_argument("--host", choices=("openai", "claude", "hermes", "antigravity"), default="openai")
+    parser.add_argument("--host", choices=("openai", "claude", "grok", "hermes", "antigravity"), default="openai")
     parser.add_argument("--data-dir")
     commands = parser.add_subparsers(dest="command", required=True)
 

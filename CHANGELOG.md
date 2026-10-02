@@ -1,5 +1,21 @@
 # Changelog
 
+
+## 0.4.0 — Unreleased
+
+- Canonical VERSION and synchronized host manifests; validated machine-readable
+  host/surface capability matrix and stable/main/immutable source channels.
+- Preserve OpenAI marketplace archives; add direct local plugin and hooks-free
+  web packages, plus distinct Claude Web and Gemini individual skill layouts.
+- Native Hermes repository discovery, Claude marketplace and Grok Build
+  compatibility; Antigravity receives a generated closed-schema manifest.
+- Share unchanged candidate rejection rules between Python and OpenClaw through
+  declarative policy data; preserve privacy and guarded promotion checks.
+- Stronger deterministic artifact contracts, checksum coverage, isolated native
+  smoke harness and release gates with controlled fast-forward stable promotion.
+- Catalog publication, web uploads, API provisioning and absent host CLIs remain
+  separate verification gates; no custom self-updater or implicit consent.
+
 ## Unreleased
 
 - Harden state, output, snapshot, installer, and packaging paths against

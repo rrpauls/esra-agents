@@ -25,14 +25,25 @@ jobs:
         with:
           python-version: "3.12"
       - name: Build and validate all supported host packages
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: |
-          python3 scripts/build_distributions.py
-          python3 scripts/validate_distributions.py dist
-          cd dist
-          sha256sum -c SHA256SUMS
+          python3 -m venv .venv
+          test "$RELEASE_TAG" = "v$(cat VERSION)"
+          .venv/bin/python scripts/sync_manifests.py --check
+          .venv/bin/python scripts/validate_skills.py
+          .venv/bin/python scripts/validate_plugin.py
+          .venv/bin/python -m unittest discover -s tests -v
+          .venv/bin/python scripts/build_distributions.py
+          .venv/bin/python scripts/validate_distributions.py dist
+          (cd dist && sha256sum -c SHA256SUMS)
+          .venv/bin/python scripts/verify_installations.py
       - name: Attach packages to the release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
-        run: gh release upload "$RELEASE_TAG" dist/*.zip dist/SHA256SUMS --clobber
+        run: gh release upload "$RELEASE_TAG" dist/*.zip dist/SHA256SUMS
+      - name: Stable promotion requires release acceptance
+        run: |
+          echo 'Validated release assets attached. Follow docs/RELEASE.md for protected, fast-forward stable promotion.' >> "$GITHUB_STEP_SUMMARY"

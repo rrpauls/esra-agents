@@ -62,7 +62,7 @@ change may receive at most one bounded review.
   blind evaluation, canary rollout, rollback, and privacy-bounded persistence.
 - **Native adapters:** OpenClaw TypeScript adapter at
   [`v0.3.0` prerelease](https://github.com/rrpauls/esra-agents/releases/tag/v0.3.0),
-  Hermes Python plugin at v0.3.0, and Antigravity Customization plugin.
+  Hermes Python plugin; 0.4.0 adds managed discovery and separate Antigravity packaging.
 - **Maturity boundary:** stable autonomous capability remains gated by the
   shared host gate and seven-day soak. Package validation and passing tests do
   not by themselves prove native lifecycle behavior in every host.
@@ -89,16 +89,26 @@ for the exact claim boundaries.
 
 ## Supported hosts
 
-| Host | Integration | Distribution boundary |
-|------|-------------|-----------------------|
-| OpenClaw | Native TypeScript lifecycle adapter and Skill Workshop promotion gate | v0.3.0 prerelease |
-| Hermes Agent | Native Python plugin and isolated `skill_manage` flow | v0.3.0 package |
-| Antigravity | Native plugin manifest with lifecycle hooks and skills | v0.3.0 package |
-| ChatGPT / Codex | Agent Plugins 1.0 package with portable skills | Local marketplace distribution |
-| Claude Code | Plugin manifest, portable skills, and lifecycle mapping | Claude plugin distribution |
-| Gemini Web | Portable skill upload format documented by Google | Universal skills bundle; web import unverified |
-| Grok Web | File-based custom skill creation documented by xAI | Universal Markdown files; web import unverified |
-
+<!-- distribution-matrix:start -->
+<!-- Generated from distributions/targets.json; do not edit. -->
+| Host / surface | Install modes (preferred first) | Stable / edge updates | Hooks | Runtime | Verification |
+|---|---|---|---|---|---|
+| OpenAI / Codex / Desktop | native-marketplace, git, release-zip, local-path | manual-native / manual-native | runtime-dependent | local | isolated native local and tracked Git marketplace/add/list/upgrade/remove; live hooks pending |
+| OpenAI / ChatGPT GitHub workspace marketplace | native-marketplace, git | automatic / automatic | runtime-dependent | environment-dependent | official-docs; package-contract-tested; live-integration-pending |
+| OpenAI / ChatGPT Work runtime | release-zip, local-path | manual-replace / manual-replace | runtime-dependent | environment-dependent | official-docs; package-contract-tested; live-integration-pending |
+| OpenAI / ChatGPT Web / public directory | manual-upload, catalog-submission | manual-replace / manual-replace | none | none | official-docs; package-contract-tested; live-integration-pending |
+| OpenAI / Agents API environments | manual-upload, local-path, release-zip | manual-replace / manual-replace | runtime-dependent | environment-dependent | official-docs; package-contract-tested; live-integration-pending |
+| Claude / Claude Code | native-marketplace, git, local-path, release-zip | automatic-opt-in / automatic-opt-in | native | local | native strict manifests and isolated tracked Git install/list/update/remove; live hooks pending |
+| Claude / Web personal skills | manual-upload | manual-replace / manual-replace | none | none | official-docs; package-contract-tested; live-integration-pending |
+| Claude / Team / Enterprise marketplace | native-marketplace, manual-upload | automatic-opt-in / automatic-opt-in | runtime-dependent | environment-dependent | official-docs; package-contract-tested; live-integration-pending |
+| Google / Gemini Web skills | manual-upload | manual-replace / manual-replace | none | none | official-docs; package-contract-tested; live-integration-pending |
+| xAI / Grok Build / CLI | git, native-marketplace, local-path, release-zip | manual-native / manual-native | native | local | native validate and isolated tracked Git install/discovery/update/remove; five skills and hooks discovered; live dispatch pending |
+| xAI / Grok Web / Bot instructions | manual-upload | manual-replace / manual-replace | none | none | file guidance only; persistent Bot skills and ZIP import unverified |
+| Hermes / Agent / Desktop | git, local-path, release-zip, catalog-submission | manual-native / automatic-opt-in | native | local | native root/archive validation and registration; managed install/update/pin skipped: host package manager missing uv.lock |
+| OpenClaw / Gateway / CLI | git, local-path, release-zip, tarball, npm, catalog-submission | manual-native / manual-native | native | local | official-docs; package-contract-tested; live-integration-pending |
+| Google / Antigravity CLI / IDE / 2.0 custom | local-path, release-zip | manual-replace / manual-replace | native | local | official-docs; package-contract-tested; live-integration-pending |
+| Agent Skills / Generic consumers | manual-upload, local-path, git | manual-replace / manual-replace | none | none | official-docs; package-contract-tested; live-integration-pending |
+<!-- distribution-matrix:end -->
 Web-only clients receive the portable guidance available to them, not local
 Python hooks or filesystem persistence. Use a tagged release and verify
 `SHA256SUMS` before installation. Full commands are in
@@ -144,11 +154,11 @@ arguments and results, secrets, and raw run identifiers are excluded.
 Run the repository checks from the project root:
 
 ```bash
-python3 scripts/validate_skills.py
-python3 scripts/validate_plugin.py
-python3 -m unittest discover -s tests -v
-python3 scripts/build_distributions.py
-python3 scripts/validate_distributions.py
+.venv/bin/python scripts/validate_skills.py
+.venv/bin/python scripts/validate_plugin.py
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python scripts/build_distributions.py
+.venv/bin/python scripts/validate_distributions.py
 ```
 
 ## Relationship to ESRA

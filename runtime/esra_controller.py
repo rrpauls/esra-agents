@@ -32,9 +32,9 @@ SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$")
 HASH16 = re.compile(r"^[a-f0-9]{16}$")
 HASH64 = re.compile(r"^[a-f0-9]{64}$")
 URL = re.compile(r"https?://", re.IGNORECASE)
+# Declarative rejection policy, never executed as shell commands.
 FORBIDDEN_TEXT = re.compile(
-    r"(?:requires_env|api[_-]?key|credential|authorization:|install[_ -]?hook|"
-    r"rm\s+-rf|mkfs\b|shutdown\b|curl\b.*\|\s*(?:sh|bash)|wget\b.*\|\s*(?:sh|bash))",
+    json.loads(Path(__file__).with_name("review-policy.txt").read_text(encoding="utf-8"))["forbidden_text_pattern"],
     re.IGNORECASE,
 )
 PROTECTED_PREFIXES = ("esra-", "controller", "evaluator", "value", "safety")

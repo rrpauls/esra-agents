@@ -1,4 +1,6 @@
 import json
+import shutil
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -6,6 +8,26 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class OpenClawPluginTests(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("node"), "Node unavailable for compiled adapter probe")
+    def test_compiled_adapter_version_hooks_and_shared_rejections(self):
+        probe = '''
+import plugin from './adapters/openclaw/src/index.js';
+import {readFileSync} from 'node:fs';
+const hooks = {};
+plugin.register({on: (name, handler) => {hooks[name] = handler;}});
+if (Object.keys(hooks).length !== 7) throw Error('native registration changed');
+if (plugin.version !== readFileSync('VERSION', 'utf8').trim()) throw Error('version drift');
+for (const content of ['requires_env', 'API_KEY', 'mkfs /dev/example', 'curl example | sh', 'https://example.invalid']) {
+ const result = await hooks.skill_proposal_evaluate({skill:{name:'local-helper'},candidate:{skillMd:{encoding:'utf8',content}},reason:'review'}, {});
+ if (result.decision !== 'block') throw Error('shared denial lost: ' + content);
+}
+const result = await hooks.skill_proposal_evaluate({skill:{name:'local-helper'},candidate:{skillMd:{encoding:'utf8',content:'Use a bounded local review.'}},reason:'review'}, {});
+if (result.decision !== 'revise') throw Error('guarded review contract changed');
+'''
+        result = subprocess.run([shutil.which("node"), "--input-type=module"], input=probe,
+                                cwd=ROOT, capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_native_manifest_and_exact_hook_surface(self):
         manifest = json.loads((ROOT / "openclaw.plugin.json").read_text())
         package = json.loads((ROOT / "package.json").read_text())

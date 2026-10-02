@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "esra-agents",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Portable ESRA skills with a guarded autonomous controller for OpenClaw and Hermes Agent.",
   "author": {
     "name": "Robert Pauls",
@@ -10,7 +10,16 @@
   "homepage": "https://github.com/rrpauls/esra-agents",
   "repository": "https://github.com/rrpauls/esra-agents",
   "license": "Apache-2.0",
-  "keywords": ["esra", "agent-skills", "autonomous-agents", "openclaw", "codex", "chatgpt", "claude-code", "hermes"],
+  "keywords": [
+    "esra",
+    "agent-skills",
+    "autonomous-agents",
+    "openclaw",
+    "codex",
+    "chatgpt",
+    "claude-code",
+    "hermes"
+  ],
   "extensions": {
     "com.openai": {
       "hooks": "./adapters/openai/hooks.json",
@@ -20,7 +29,10 @@
         "longDescription": "Five portable ESRA skills plus a local privacy-preserving runtime and thin host adapters.",
         "developerName": "Robert Pauls",
         "category": "Developer Tools",
-        "capabilities": ["Analysis", "Local automation"],
+        "capabilities": [
+          "Analysis",
+          "Local automation"
+        ],
         "websiteURL": "https://github.com/rrpauls/esra-agents",
         "defaultPrompt": [
           "Review this major change with one bounded ESRA cycle.",
