@@ -137,9 +137,9 @@ def atomic_json(path: Path, value: Any) -> None:
 
 
 def read_json(path: Path, default: Any = None) -> Any:
+    refuse_symlink(path)
     if not path.exists():
         return default
-    refuse_symlink(path)
     with path.open(encoding="utf-8") as handle:
         return json.load(handle)
 
@@ -156,9 +156,9 @@ def append_jsonl(path: Path, value: dict[str, Any]) -> None:
 
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
+    refuse_symlink(path)
     if not path.exists():
         return []
-    refuse_symlink(path)
     rows: list[dict[str, Any]] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         try:

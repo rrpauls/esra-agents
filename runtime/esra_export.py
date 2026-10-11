@@ -94,10 +94,10 @@ def normalize_evidence(record: dict[str, Any], source: str) -> list[str]:
 def load_source_records(base: Path) -> Iterable[tuple[dict[str, Any], str, float]]:
     for name in ROTATED_LOGS:
         path = base / name
-        if not path.exists():
-            continue
         if path.is_symlink():
             raise ValueError(f"refusing symlinked source: {path}")
+        if not path.exists():
+            continue
         fallback = path.stat().st_mtime
         for index, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
             try:
