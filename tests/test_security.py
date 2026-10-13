@@ -55,6 +55,41 @@ class FilesystemSecurityTests(unittest.TestCase):
             self.assertFalse((outside / "new").exists())
             self.assertFalse((outside / "missing").exists())
 
+    def test_readers_reject_dangling_symlinks(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            outside = root / "outside"
+            outside.mkdir()
+            dangling = root / "dangling.json"
+            dangling.symlink_to(outside / "missing.json")
+
+            with self.assertRaises(ValueError):
+                esra_controller.read_json(dangling)
+            with self.assertRaises(ValueError):
+                esra_controller.load_jsonl(dangling)
+            with self.assertRaises(ValueError):
+                esra_runtime.read_json(dangling, default={})
+
+            data_dir = root / "data"
+            data_dir.mkdir()
+            (data_dir / "events.jsonl").symlink_to(outside / "missing_events.jsonl")
+            with self.assertRaises(ValueError):
+                esra_runtime.load_events(data_dir)
+            with self.assertRaises(ValueError):
+                list(esra_export.load_source_records(data_dir))
+
+            state_dir = root / "state"
+            state_dir.mkdir()
+            controller = esra_controller.Controller(state_dir)
+            controller.events_path.symlink_to(outside / "missing_events.jsonl")
+            with self.assertRaises(ValueError):
+                controller.prune()
+            with self.assertRaises(ValueError):
+                controller._live_revision(dangling)
+            (state_dir / "candidates" / "trial.json").symlink_to(outside / "missing_candidate.json")
+            with self.assertRaises(ValueError):
+                controller.ingest({"agent_id": "test-agent", "candidate_id": "trial"})
+
     def test_state_directories_and_changed_skills_root_reject_links(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

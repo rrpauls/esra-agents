@@ -399,8 +399,10 @@ class Controller:
                 candidate_path = self.candidate_path(str(candidate_id))
             except ValueError:
                 candidate_path = None
-            if candidate_path and candidate_path.exists():
-                self._observe_canary(str(candidate_id), persisted)
+            if candidate_path:
+                refuse_symlink(candidate_path)
+                if candidate_path.exists():
+                    self._observe_canary(str(candidate_id), persisted)
         self.prune()
         return persisted
 
