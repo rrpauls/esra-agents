@@ -74,15 +74,18 @@ def run_command(command: list[str], env: dict[str, str], cwd: Path) -> tuple[str
                 assert found["provides"]["skills"] == 5 and found["provides"]["hooks"] is True
             else:
                 plugins = value["installed"] if isinstance(value, dict) else value
-                found = next(p for p in plugins if p.get("name") == "esra-agents" or p.get("id") == "esra-agents@esra-agents")
+                found = next(p for p in plugins if p.get("name") == "esra-agents" or str(p.get("id", "")).split("@", 1)[0] == "esra-agents")
                 assert found["version"] == version()
+                if isinstance(value, dict) and "pluginId" in found and "marketplaceName" in found:
+                    assert found["installed"] is True and found["enabled"] is True
         except (ValueError, KeyError, TypeError, StopIteration, AssertionError):
-            return "FAIL", "native discovery did not report the expected ESRA version/five skills/hooks"
+            expected = "identity/five skills/hooks" if command[1] == "inspect" else "identity/version/installation state"
+            return "FAIL", f"native discovery did not report the expected ESRA {expected}"
     return ("PASS" if result.returncode == 0 else "FAIL"), output[-4000:]
 
 
 @contextmanager
-def git_fixture(workspace: Path):
+def git_fixture(workspace: Path, *, missing_plugin_ref: bool = False):
     """Serve an exact disposable working-tree snapshot through native Git HTTP.
 
     Only a fixture bare repository is exposed on loopback, never host profiles,
@@ -145,12 +148,14 @@ def git_fixture(workspace: Path):
         for relative in (".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"):
             path = checkout / relative
             value = json.loads(path.read_text())
-            value["plugins"][0]["source"] = {"source": "url", "url": source, "ref": "stable"}
+            value["name"] = "esra-agents-edge"
+            value["plugins"][0]["source"] = {"source": "url", "url": source,
+                                                "ref": "stable" if missing_plugin_ref else "main"}
             path.write_text(json.dumps(value))
         env = profile_env(fixture / "profile")
         def git(*args, cwd=checkout):
             subprocess.run(["git", *args], cwd=cwd, env=env, check=True, capture_output=True)
-        git("init", "-b", "stable")
+        git("init", "-b", "main")
         git("add", ".")
         git("-c", "user.name=ESRA fixture", "-c", "user.email=fixture@example.invalid", "commit", "-m", "Isolated installation fixture")
         git("clone", "--bare", str(checkout), str(served / "esra-agents.git"))
@@ -162,20 +167,27 @@ def git_fixture(workspace: Path):
         thread.join(timeout=5)
 
 
-def commands(host: str, cli: str, plugin: Path, *, install: bool, source: str | None) -> list[list[str]]:
+def commands(host: str, cli: str, plugin: Path, *, install: bool, source: str | None,
+             marketplace_name: str | None = None) -> list[list[str]]:
     if host == "codex":
         if not install:
             return []  # No cold validator; archive and marketplace contract checks run above.
         market = plugin.parents[1]
+        name = marketplace_name or ("esra-agents-edge" if source else json.loads(
+            (market / ".agents/plugins/marketplace.json").read_text())["name"])
+        identity = f"esra-agents@{name}"
         return [[cli, "plugin", "marketplace", "add", source or str(market)],
-                [cli, "plugin", "add", "esra-agents@esra-agents"],
+                [cli, "plugin", "add", identity],
                 [cli, "plugin", "list", "--json"],
-                *([[cli, "plugin", "marketplace", "upgrade", "esra-agents"]] if source else []),
-                [cli, "plugin", "remove", "esra-agents@esra-agents"]]
+                *([[cli, "plugin", "marketplace", "upgrade", name]] if source else []),
+                [cli, "plugin", "remove", identity]]
     if host == "claude":
         steps = [[cli, "plugin", "validate", "--strict", str(plugin / ".claude-plugin/plugin.json")],
                  [cli, "plugin", "validate", "--strict", str(plugin / ".claude-plugin/marketplace.json")]]
         if install:
+            name = marketplace_name or ("esra-agents-edge" if source else json.loads(
+                (plugin / ".claude-plugin/marketplace.json").read_text())["name"])
+            identity = f"esra-agents@{name}"
             if not source:
                 # Local relative source tests this build; never silently fetch stable instead.
                 path = plugin / ".claude-plugin/marketplace.json"
@@ -183,10 +195,10 @@ def commands(host: str, cli: str, plugin: Path, *, install: bool, source: str | 
                 value["plugins"][0]["source"] = "./"
                 path.write_text(json.dumps(value))
             steps += [[cli, "plugin", "marketplace", "add", source or str(plugin)],
-                      [cli, "plugin", "install", "esra-agents@esra-agents"],
+                      [cli, "plugin", "install", identity],
                       [cli, "plugin", "list", "--json"],
-                      [cli, "plugin", "update", "esra-agents@esra-agents"],
-                      [cli, "plugin", "uninstall", "esra-agents@esra-agents"]]
+                      [cli, "plugin", "update", identity],
+                      [cli, "plugin", "uninstall", identity]]
         return steps
     if host == "grok":
         steps = [[cli, "plugin", "validate", str(plugin)]]
@@ -225,6 +237,9 @@ def main() -> int:
     parser.add_argument("--install", action="store_true", help="Allow native installs into temporary profiles only")
     parser.add_argument("--source", help="Opt-in published Git source for selected host; requires --host and --install")
     parser.add_argument("--git-fixture", action="store_true", help="Test native Git tracking with a disposable loopback repository")
+    parser.add_argument("--missing-plugin-ref", action="store_true",
+                        help="Expect Codex marketplace registration to pass but plugin installation to fail on an absent stable ref; requires --git-fixture")
+    parser.add_argument("--marketplace-name", help="Catalog identity override for an explicit published --source (Codex discovers the downloaded identity)")
     parser.add_argument("--trust-source", action="store_true", help="Explicitly accept Hermes caution findings for an isolated source install; never bypasses dangerous findings")
     parser.add_argument("--pin-fixture", action="store_true", help="Verify exact-commit Hermes install/update refusal using the Git fixture")
     parser.add_argument("--hermes-cli", help="Prepared Hermes environment entry point (avoids bootstrap repair)")
@@ -234,6 +249,10 @@ def main() -> int:
         parser.error("--source requires --host and --install")
     if args.git_fixture and (not args.install or not args.host or args.source):
         parser.error("--git-fixture requires --host and --install, and cannot be combined with --source")
+    if args.missing_plugin_ref and not (args.git_fixture and args.host == "codex"):
+        parser.error("--missing-plugin-ref requires a Codex Git fixture")
+    if args.marketplace_name and not args.source:
+        parser.error("--marketplace-name requires --source")
     if args.trust_source and not (args.install and args.host == "hermes" and (args.source or args.git_fixture)):
         parser.error("--trust-source requires a Hermes --install with --source or --git-fixture")
     if args.pin_fixture and not (args.git_fixture and args.host == "hermes"):
@@ -270,9 +289,10 @@ def main() -> int:
                 if host == "codex":
                     plugin = plugin / "plugins/esra-agents"
                 from contextlib import nullcontext
-                fixture_context = git_fixture(workspace) if args.git_fixture else nullcontext(args.source)
+                fixture_context = git_fixture(workspace, missing_plugin_ref=args.missing_plugin_ref) if args.git_fixture else nullcontext(args.source)
                 with fixture_context as source:
-                    steps = commands(host, cli, plugin, install=args.install, source=source)
+                    steps = commands(host, cli, plugin, install=args.install, source=source,
+                                     marketplace_name=args.marketplace_name)
                     pin = None
                     if args.pin_fixture:
                         pin = subprocess.check_output(["git", "ls-remote", source, "HEAD"], env=env).decode().split()[0]
@@ -285,6 +305,29 @@ def main() -> int:
                                 command.extend(["--force", "--no-deps"])
                     for command in steps:
                         status, detail = run_command(command, env, profile)
+                        if (status == "PASS" and host == "codex" and args.source
+                                and not args.marketplace_name
+                                and command[1:4] == ["plugin", "marketplace", "add"]):
+                            catalogs = list((profile / ".codex/.tmp/marketplaces").glob(
+                                "*/.agents/plugins/marketplace.json"))
+                            if len(catalogs) != 1:
+                                status, detail = "FAIL", "cannot identify the downloaded Codex marketplace catalog"
+                            else:
+                                name = json.loads(catalogs[0].read_text())["name"]
+                                for step in steps:
+                                    for index, part in enumerate(step):
+                                        if part == "esra-agents@esra-agents-edge":
+                                            step[index] = f"esra-agents@{name}"
+                                        elif part == "esra-agents-edge":
+                                            step[index] = name
+                        if args.missing_plugin_ref and command[1:3] == ["plugin", "add"]:
+                            missing_ref = re.search(r"pathspec [\'\"]stable[\'\"] did not match|could(?: not|n't) find remote ref stable|invalid reference: stable", detail, re.I)
+                            if status == "FAIL" and missing_ref:
+                                status, detail = "PASS", "catalog registration passed; native plugin install rejected absent stable ref"
+                            else:
+                                status, detail = "FAIL", "expected native install to fail specifically on absent stable ref: " + detail
+                            results.append({"host": host, "status": status, "command": command[1:], "detail": detail})
+                            break
                         if args.pin_fixture and command[1:3] == ["plugins", "update"]:
                             head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=profile / ".hermes/plugins/esra-agents", env=env).decode().strip()
                             if status == "FAIL" and "pinned" in detail.lower() and head == pin:

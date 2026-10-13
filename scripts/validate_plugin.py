@@ -11,8 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 try:
     from .distribution_contract import version, validate_versions, validate_contract
+    from .sync_manifests import validate_marketplaces
 except ImportError:
     from distribution_contract import version, validate_versions, validate_contract
+    from sync_manifests import validate_marketplaces
 
 
 def read(relative: str) -> dict:
@@ -20,12 +22,11 @@ def read(relative: str) -> dict:
 
 
 def validate() -> list[str]:
-    errors: list[str] = validate_versions() + validate_contract()
+    errors: list[str] = validate_versions() + validate_contract() + validate_marketplaces()
     portable = read("plugin.json")
     codex = read(".codex-plugin/plugin.json")
     claude = read(".claude-plugin/plugin.json")
     conformance = read("esra-conformance.json")
-    marketplace = read(".agents/plugins/marketplace.json")
     versions = {portable.get("version"), codex.get("version"), claude.get("version"), conformance.get("implementation_version")}
     if versions != {version()}:
         errors.append(f"version drift across manifests: {sorted(str(value) for value in versions)}")
@@ -35,11 +36,6 @@ def validate() -> list[str]:
         errors.append("all plugin manifests must use the esra-agents name")
     if codex.get("skills") != "./skills/":
         errors.append("Codex compatibility manifest must expose ./skills/")
-    entry = marketplace.get("plugins", [{}])[0]
-    if marketplace.get("name") != "esra-agents" or entry.get("name") != "esra-agents":
-        errors.append("repository marketplace must publish esra-agents")
-    if entry.get("source", {}).get("ref") != "stable":
-        errors.append("repository marketplace must follow the stable channel")
     extension = portable.get("extensions", {}).get("com.openai", {})
     hook_path = str(extension.get("hooks", "")).removeprefix("./")
     if not hook_path or not (ROOT / hook_path).is_file():

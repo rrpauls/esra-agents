@@ -13,7 +13,7 @@ from zipfile import ZipFile
 
 from scripts.build_distributions import ROOT, build
 from scripts.distribution_contract import JSON_VERSIONS, contract, validate_contract, validate_versions, version
-from scripts.sync_manifests import sync
+from scripts.sync_manifests import sync, validate_marketplaces
 from scripts.validate_distributions import validate_package, validate
 from scripts.verify_installations import commands, profile_env
 from runtime.esra_controller import FORBIDDEN_TEXT
@@ -25,12 +25,13 @@ class InstallationContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             files = list(JSON_VERSIONS) + ["VERSION", "plugin.yaml", "adapters/hermes/plugin/plugin.yaml",
-                    ".claude-plugin/marketplace.json", "distributions/targets.json", "INSTALL.md", "README.md"]
+                    ".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json", "distributions/targets.json", "INSTALL.md", "README.md"]
             for relative in files:
                 target = root / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(ROOT / relative, target)
-            (root / "VERSION").write_text("0.4.1\n")
+            major, minor, patch = version(root).split(".")
+            (root / "VERSION").write_text(f"{major}.{minor}.{int(patch.split('-')[0]) + 1}\n")
             self.assertTrue(validate_versions(root))
             sync(root)
             self.assertEqual([], validate_versions(root))
@@ -40,13 +41,15 @@ class InstallationContractTests(unittest.TestCase):
             (root / "package.json").write_text(json.dumps(value))
             self.assertTrue(validate_versions(root))
 
-    def test_stable_sources_are_moving_and_pinned_examples_are_explicit(self):
+    def test_repository_edge_and_staged_channels_are_explicit(self):
         for relative in (".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"):
-            source = json.loads((ROOT / relative).read_text())["plugins"][0]["source"]
-            self.assertEqual("stable", source["ref"])
+            catalog = json.loads((ROOT / relative).read_text())
+            self.assertEqual("esra-agents-edge", catalog["name"])
+            source = catalog["plugins"][0]["source"]
+            self.assertEqual("main", source["ref"])
             self.assertNotIn("sha", source)
         with tempfile.TemporaryDirectory() as temp:
-            for channel, selector in (("edge", "main"), ("immutable", "v0.4.0")):
+            for channel, selector in (("stable", "stable"), ("edge", "main"), ("immutable", "v0.4.0")):
                 command = [sys.executable, str(ROOT / "scripts/sync_manifests.py"),
                            "--stage-marketplace", temp, "--channel", channel]
                 if channel == "immutable":
@@ -54,9 +57,31 @@ class InstallationContractTests(unittest.TestCase):
                 result = subprocess.run(command, capture_output=True, text=True)
                 self.assertEqual(0, result.returncode, result.stderr)
                 for path in (".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"):
-                    self.assertEqual(selector, json.loads((Path(temp) / path).read_text())["plugins"][0]["source"]["ref"])
+                    catalog = json.loads((Path(temp) / path).read_text())
+                    self.assertEqual(f"esra-agents-{channel}", catalog["name"])
+                    self.assertEqual(selector, catalog["plugins"][0]["source"]["ref"])
             bad = subprocess.run(command[:-1] + ["stable"], capture_output=True, text=True)
             self.assertNotEqual(0, bad.returncode)
+
+    def test_sync_repairs_repository_catalog_channel_drift(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            files = list(JSON_VERSIONS) + ["VERSION", "plugin.yaml", "adapters/hermes/plugin/plugin.yaml",
+                    ".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json",
+                    "distributions/targets.json", "INSTALL.md", "README.md"]
+            for relative in files:
+                target = root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / relative, target)
+            for relative in (".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"):
+                path = root / relative
+                value = json.loads(path.read_text())
+                value["name"] = "esra-agents"
+                value["plugins"][0]["source"]["ref"] = "stable"
+                path.write_text(json.dumps(value))
+                self.assertTrue(any(relative in error for error in validate_marketplaces(root)))
+            sync(root)
+            self.assertEqual([], validate_marketplaces(root))
 
     def test_surfaces_and_documentation_are_complete(self):
         self.assertEqual([], validate_contract())
@@ -134,7 +159,11 @@ class InstallationContractTests(unittest.TestCase):
                 for command in commands(host, host, root, install=False, source=None):
                     self.assertNotIn("install", command)
                     self.assertNotIn("add", command)
+            catalog = root / ".agents/plugins/marketplace.json"
+            catalog.parent.mkdir(parents=True)
+            shutil.copyfile(ROOT / ".agents/plugins/marketplace.json", catalog)
             local_codex = commands("codex", "codex", root / "plugins/esra-agents", install=True, source=None)
+            self.assertIn(["codex", "plugin", "add", "esra-agents@esra-agents-edge"], local_codex)
             self.assertFalse(any("upgrade" in command for command in local_codex))
 
 

@@ -1,0 +1,22 @@
+name: Published source readiness
+
+# Explicit online evidence, independent of candidate/package/release validation.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  advertised-refs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Verify advertised public Git refs
+        run: python scripts/verify_published_sources.py
+      - name: Record evidence boundary
+        run: echo 'Advertised refs resolve. Native installation and live hooks require separate disposable host checks.' >> "$GITHUB_STEP_SUMMARY"

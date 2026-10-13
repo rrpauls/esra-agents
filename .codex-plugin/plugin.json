@@ -1,6 +1,6 @@
 {
   "name": "esra-agents",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Portable evidence-driven ESRA workflows and local runtime.",
   "author": {
     "name": "Robert Pauls",

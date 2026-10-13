@@ -13,9 +13,9 @@ is distinct from host loading, actual hook execution and production readiness.
 - **Immutable:** version tag or full commit SHA; no automatic movement. Hermes
   accepts only a full 40-character commit SHA for `--ref`.
 
-Version 0.4.0 is a release candidate in this checkout. The stable branch and
-v0.4.0 tag must be published by the release operator before these remote examples
-are usable. See [Release procedure](docs/RELEASE.md). Existing v0.3.0 assets stay
+Version 0.4.1 is an edge candidate in this checkout. Stable branch and
+version-tag examples require an accepted release and actual publication by the
+release operator; main/edge is available independently. See [Release procedure](docs/RELEASE.md). Existing v0.3.0 assets stay
 immutable. No ESRA background updater is installed.
 
 Download ZIPs and `SHA256SUMS` from the same tagged release, then verify:
@@ -31,52 +31,90 @@ All local script hooks require Python 3.10+ in the host execution environment.
 The dependency-free hook entry point imports sibling runtime files directly;
 it does not depend on globally installed project packages.
 
-## Codex and ChatGPT Desktop/local marketplaces
+## Codex Desktop: official Git marketplace (edge)
 
-The stable repository marketplace follows the stable **plugin** source:
+After this fix is published, the catalog on `main` is explicitly
+`esra-agents-edge`, and its plugin source follows `main`. It is development
+version 0.4.1, not an accepted stable release. As checked on 2026-10-13, public
+`main` exists but `stable` and `v0.4.0` do not; the remote catalog still needs
+this repair to be published before the following official-URL flow succeeds.
+
+1. Open the Plugins area in Codex Desktop and add a Git marketplace source.
+2. Enter exactly `https://github.com/rrpauls/esra-agents/` without a ref.
+3. Select the `esra-agents-edge` catalog and install `esra-agents` separately.
+4. Confirm the plugin is installed and enabled, with all five ESRA skills.
+
+The equivalent native commands are:
 
 ```bash
-codex plugin marketplace add rrpauls/esra-agents --ref stable
-codex plugin add esra-agents@esra-agents
+codex plugin marketplace add https://github.com/rrpauls/esra-agents/
+codex plugin add esra-agents@esra-agents-edge
 codex plugin list --json
-codex plugin marketplace upgrade esra-agents
-codex plugin remove esra-agents@esra-agents
-codex plugin marketplace remove esra-agents
+codex plugin marketplace upgrade esra-agents-edge
 ```
 
-For a release/offline installation, extract `esra-agents-openai.zip`, add its
-`esra-agents-openai/` directory with `codex plugin marketplace add /absolute/path/to/esra-agents-openai`,
-then use the same add/list/remove commands. Updates to extracted copies require
-manual replacement and native removal/re-addition of the local marketplace and
-plugin; `marketplace upgrade` supports Git sources, not local catalogs.
-Old releases whose extracted
-folder is `esra-agents-marketplace/` still use that directory.
+Adding or updating a catalog and installing its plugin are separate operations.
+Choosing a catalog revision does not override `plugins[].source.ref`.
+`git checkout stable` / `pathspec 'stable' did not match` means the advertised
+plugin ref is absent. Updating that same catalog cannot create the branch.
+`Repository not found` requires checking the exact owner `rrpauls`; SSH permission
+errors concern source access and are separate from a missing plugin ref.
 
-ChatGPT Desktop exposes local sources in its Plugins Directory. Restart after
-replacing a local plugin. Codex's native `marketplace upgrade` refreshes managed
-sources; ESRA does not promise unattended local updates. Hook installation does
-not grant trust: review scripts and approve non-managed hooks in the host.
-Hooks record only allowlisted lifecycle metadata and never steer execution.
-
-Adding a catalog from `main` does **not** override a plugin entry that says
-`stable`. Stage explicit alternative catalogs from this checkout instead:
+Until the repair is published, stage an explicit edge or immutable catalog from
+this checkout. Keep its directory while it is referenced by the host:
 
 ```bash
 .venv/bin/python scripts/sync_manifests.py --stage-marketplace /tmp/esra-edge --channel edge
 codex plugin marketplace add /tmp/esra-edge
 codex plugin add esra-agents@esra-agents-edge
-.venv/bin/python scripts/sync_manifests.py --stage-marketplace /tmp/esra-pinned --channel immutable --ref v0.4.0
+.venv/bin/python scripts/sync_manifests.py --stage-marketplace /tmp/esra-pinned --channel immutable --ref 4ea4cbb4ff31e166113d926c17996586c9e92b52
 codex plugin marketplace add /tmp/esra-pinned
 codex plugin add esra-agents@esra-agents-immutable
 ```
 
-An exact commit can replace `v0.4.0`. Pinned entries stay fixed even when their
-catalog is refreshed. Staged catalogs are local files; their plugin sources are
-native tracked Git sources. Repository installations do not require repacking.
+That exact SHA was available on 2026-10-13. Verify availability again before use.
+An immutable installation stays fixed; refreshing its catalog does not move the
+pin. Existing working pinned profiles do not need replacement to test this fix.
+
+Stable is unavailable until an accepted release passes [release gates](docs/RELEASE.md)
+and is promoted. Only then stage `--channel stable`, verify the published source,
+and install `esra-agents@esra-agents-stable`. This is a deliberate channel change;
+remove an old channel's plugin only after verifying the replacement. The official
+main catalog continues to identify edge even after stable becomes available.
+
+For an offline release installation, extract `esra-agents-openai.zip` and add its
+`esra-agents-openai/` directory. That separate archive catalog is named
+`esra-agents`; use `codex plugin add esra-agents@esra-agents`. Updates require
+manual replacement and native removal/re-addition; Git marketplace upgrade does
+not update local catalog files. Older archive roots may be named
+`esra-agents-marketplace/`.
+
+ChatGPT Desktop local sources and GitHub-managed workspace catalogs below are
+separate host surfaces. Hooks require the host's script trust and Python runtime.
+Installation/discovery does not prove hook execution or skill use in a new chat.
+ESRA installs no background updater.
+
+## Source readiness versus package validation
+
+Offline validators and Git fixtures check the current working tree. They do not
+prove that the public catalog contains it. Check advertised remote refs separately:
+
+```bash
+.venv/bin/python scripts/verify_published_sources.py
+.venv/bin/python scripts/verify_published_sources.py --catalog-root /tmp/esra-pinned
+.venv/bin/python scripts/verify_installations.py --host codex --install --git-fixture
+.venv/bin/python scripts/verify_installations.py --host codex --install --source https://github.com/rrpauls/esra-agents/
+```
+
+The final command tests the actually published catalog in a clean temporary
+profile and may fail until this repair is published. Branch/tag checks require
+nonempty `git ls-remote --exit-code` output; full SHA checks fetch and check out
+the commit in isolation. Ref availability alone does not prove native loading.
 
 ## ChatGPT GitHub-managed workspace marketplace
 
-An administrator imports `rrpauls/esra-agents` at `stable` from Workspace
+After stable release acceptance and source verification, an administrator imports
+a staged stable catalog from an admin-controlled mirror from Workspace
 settings → Plugins → Marketplaces. Public and private repositories are supported
 subject to the workspace's GitHub access. OpenAI owns daily synchronization;
 **Sync now** requests a refresh. Select the enabled installation policy for
@@ -119,13 +157,15 @@ apply only if separately provisioned and authorized.
 
 ## Claude Code
 
+The official main catalog is edge; the commands below require publication of this repair.
+
 ```bash
-claude plugin marketplace add rrpauls/esra-agents#stable
-claude plugin install esra-agents@esra-agents
-claude plugin update esra-agents@esra-agents
-claude plugin marketplace update esra-agents
-claude plugin uninstall esra-agents@esra-agents
-claude plugin marketplace remove esra-agents
+claude plugin marketplace add https://github.com/rrpauls/esra-agents.git
+claude plugin install esra-agents@esra-agents-edge
+claude plugin update esra-agents@esra-agents-edge
+claude plugin marketplace update esra-agents-edge
+claude plugin uninstall esra-agents@esra-agents-edge
+claude plugin marketplace remove esra-agents-edge
 ```
 
 Native custom-marketplace auto-update is off by default. In `/plugin` →
@@ -190,16 +230,17 @@ The shared hook detects `GROK_PLUGIN_ROOT` and records under `GROK_PLUGIN_DATA`.
 
 ```bash
 grok plugin marketplace add rrpauls/esra-agents
-grok plugin install rrpauls/esra-agents@stable --trust
+grok plugin install rrpauls/esra-agents@main --trust
 grok plugin details esra-agents
 grok inspect --json
 grok plugin update esra-agents
-grok plugin marketplace update esra-agents
+grok plugin marketplace update esra-agents-edge
 grok plugin uninstall esra-agents --confirm
 ```
 
-Use `@main` for edge, `@v0.4.0` or `@<full-commit-sha>` for immutable direct
-installs. A catalog install follows its entry's source; use a staged edge/pinned
+Use `@stable` only after accepted stable promotion; use an available version tag
+or `@<full-commit-sha>` for immutable direct installs. A catalog install follows
+its entry's source; use a staged edge/pinned
 catalog for that path. A local path or `grok --plugin-dir /absolute/path` supports
 development; `.grok/plugins/` and `~/.grok/plugins/` support discovery. Review
 code before granting `--trust`; project hooks need host trust. Native manual
