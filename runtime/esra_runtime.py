@@ -95,9 +95,9 @@ def atomic_json(path: Path, payload: Any) -> None:
 
 
 def read_json(path: Path, default: Any) -> Any:
+    _refuse_symlink(path)
     if not path.exists():
         return default
-    _refuse_symlink(path)
     with path.open(encoding="utf-8") as handle:
         return json.load(handle)
 
@@ -125,9 +125,9 @@ def load_events(base: Path, limit: int | None = None) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for name in ("events.1.jsonl", "events.jsonl"):
         path = base / name
+        _refuse_symlink(path)
         if not path.exists():
             continue
-        _refuse_symlink(path)
         for line in path.read_text(encoding="utf-8").splitlines():
             try:
                 value = json.loads(line)
