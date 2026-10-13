@@ -17,6 +17,25 @@ except ImportError:
     from distribution_contract import ROOT, JSON_VERSIONS, matrix, version, validate_versions, validate_contract
 
 
+MARKETPLACES = (".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json")
+
+
+def validate_marketplaces(root: Path = ROOT) -> list[str]:
+    """Validate checked-in edge catalogs without accessing published Git refs."""
+    errors = []
+    for relative in MARKETPLACES:
+        value = json.loads((root / relative).read_text())
+        entries = value.get("plugins", [])
+        if value.get("name") != "esra-agents-edge":
+            errors.append(f"{relative}: repository marketplace must be named esra-agents-edge")
+        if len(entries) != 1 or entries[0].get("name") != "esra-agents":
+            errors.append(f"{relative}: repository marketplace must publish esra-agents")
+            continue
+        if entries[0].get("source", {}).get("ref") != "main":
+            errors.append(f"{relative}: repository edge marketplace must follow main")
+    return errors
+
+
 def sync(root: Path = ROOT) -> None:
     release = version(root)
     for path, field in JSON_VERSIONS.items():
@@ -28,12 +47,19 @@ def sync(root: Path = ROOT) -> None:
     native = re.sub(r"^version: .+$", f"version: {release}", path.read_text(), flags=re.M)
     path.write_text(native)
     (root / "plugin.yaml").write_text(native)
-    path = root / ".claude-plugin/marketplace.json"
-    value = json.loads(path.read_text())
-    value["metadata"]["version"] = release
-    for entry in value["plugins"]:
-        entry["version"] = release
-    path.write_text(json.dumps(value, indent=2) + "\n")
+    for relative in MARKETPLACES:
+        path = root / relative
+        value = json.loads(path.read_text())
+        value["name"] = "esra-agents-edge"
+        for entry in value["plugins"]:
+            entry["source"]["ref"] = "main"
+        if relative == ".claude-plugin/marketplace.json":
+            value["metadata"]["version"] = release
+            for entry in value["plugins"]:
+                entry["version"] = release
+        else:
+            value["interface"]["displayName"] = "ESRA Agents (Edge)"
+        path.write_text(json.dumps(value, indent=2) + "\n")
     data = json.loads((root / "distributions/targets.json").read_text())
     block = "<!-- distribution-matrix:start -->\n" + matrix(data) + "<!-- distribution-matrix:end -->"
     for document in ("INSTALL.md", "README.md"):
@@ -60,9 +86,11 @@ def main() -> int:
             parser.error("immutable channel requires --ref vX.Y.Z or a full commit SHA")
         from runtime.esra_paths import secure_dir, secure_open
         import os
-        for relative in (".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"):
+        for relative in MARKETPLACES:
             value = json.loads((ROOT / relative).read_text())
             value["name"] = f"esra-agents-{args.channel}"
+            if "interface" in value:
+                value["interface"]["displayName"] = f"ESRA Agents ({args.channel.title()})"
             value["plugins"][0]["source"]["ref"] = selector
             path = args.stage_marketplace / relative
             secure_dir(path.parent)
@@ -71,7 +99,7 @@ def main() -> int:
         return 0
     if not args.check:
         sync()
-    errors = validate_versions() + validate_contract()
+    errors = validate_versions() + validate_contract() + validate_marketplaces()
     for error in errors:
         print(f"ERROR: {error}")
     return bool(errors)
