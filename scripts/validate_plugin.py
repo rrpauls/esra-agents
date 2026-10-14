@@ -44,7 +44,7 @@ def validate() -> list[str]:
     hook_path = str(extension.get("hooks", "")).removeprefix("./")
     if not hook_path or not (ROOT / hook_path).is_file():
         errors.append("OpenAI extension hook path is unresolved")
-    for relative in ("adapters/openai/hooks.json", "hooks/hooks.json"):
+    for relative in ("adapters/openai/hooks.json", "hooks/hooks.json", "hooks.json"):
         text = (ROOT / relative).read_text(encoding="utf-8")
         json.loads(text)
         for forbidden in ("prompt_text", "transcript_path", "tool_input", "tool_output", "$prompt"):

@@ -16,19 +16,23 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--host", choices=("openai", "claude", "grok", "hermes", "antigravity"), required=True)
     parser.add_argument("--data-dir")
     parser.add_argument("--event", help="Override event name (useful for Antigravity)")
+    args = None
     try:
         args = parser.parse_args(argv)
         if args.host == "claude" and os.environ.get("GROK_PLUGIN_ROOT"):
             args.host = "grok"
         raw = sys.stdin.read()
         payload = json.loads(raw) if raw.strip() else {}
-        if not isinstance(payload, dict):
-            return 0
-        if args.event:
-            payload["hook_event_name"] = args.event
-        record_lifecycle(payload, args.host, resolve_data_dir(args.host, args.data_dir))
+        if isinstance(payload, dict):
+            if args.event:
+                payload["hook_event_name"] = args.event
+            record_lifecycle(payload, args.host, resolve_data_dir(args.host, args.data_dir))
     except Exception:
         pass
+    finally:
+        if args and args.host == "antigravity":
+            sys.stdout.write("{}\n")
+            sys.stdout.flush()
     return 0
 
 

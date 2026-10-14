@@ -436,6 +436,7 @@
       "artifact": "esra-agents-antigravity.zip",
       "installation_modes": [
         "local-path",
+        "git",
         "release-zip"
       ],
       "preferred_installation_mode": "local-path",

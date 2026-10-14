@@ -299,7 +299,33 @@ promotion. Do not broaden the ordinary agent's scope.
 
 ## Google Antigravity CLI / IDE / 2.0
 
-Extract `esra-agents-antigravity.zip` and install the **inner plugin directory**:
+### Option A: Direct Git clone (recommended for IDE and development)
+
+Clone the repository into your global or workspace plugins directory:
+
+```bash
+# Global installation (available across all workspaces):
+git clone https://github.com/rrpauls/esra-agents ~/.gemini/config/plugins/esra-agents
+
+# Or workspace-specific installation:
+git clone https://github.com/rrpauls/esra-agents .agents/plugins/esra-agents
+```
+
+Root-level `hooks.json` and `plugin.json` are discovered natively by Antigravity.
+The five skills in `skills/` and observational lifecycle hooks (`PreInvocation`
+and `Stop`) connect immediately without build steps.
+
+### Option B: Pre-built distribution ZIP
+
+Extract `esra-agents-antigravity.zip` and place the plugin directory in your
+plugins folder:
+
+```bash
+mkdir -p ~/.gemini/config/plugins/esra-agents
+unzip -d ~/.gemini/config/plugins/esra-agents /absolute/path/to/esra-agents-antigravity.zip
+```
+
+### Option C: Antigravity CLI (when `agy` is installed)
 
 ```bash
 agy plugin install /absolute/path/to/esra-agents-antigravity
@@ -307,19 +333,14 @@ agy plugin list
 agy plugin uninstall esra-agents
 ```
 
-Manual IDE/2.0 installs place that folder in workspace `.agents/plugins/` or
-`~/.gemini/config/plugins/`; CLI staging uses its own managed profile directory.
-Do not unzip the enclosing folder inside another `esra-agents` folder. Custom
-updates are manual replacement/reinstall. Build from a checkout of stable, main,
-a tag or SHA to select the source channel for local development. Remove a manually
-placed folder to uninstall; inspect `/hooks` and skill discovery after approval.
+### Discovery and manifest notes
 
-The native closed manifest accepts `name` and `description`; version is in
-`distribution.json` and VERSION. The generic repository-root Agent Plugins
-manifest is **not** a native Antigravity manifest. Use the generated package.
-No curated Marketplace listing or automatic update is claimed. Hooks execute
-only after host trust and Python provisioning. Relative command resolution and
-actual hook execution still require an Antigravity integration run.
+Antigravity natively discovers `plugin.json` (`name`, `description`), `hooks.json`,
+and the `skills/` directory from `~/.gemini/config/plugins/esra-agents` or
+`.agents/plugins/esra-agents`. Distribution builds bundle a focused manifest
+alongside `distribution.json`. Hooks execute only after host trust and Python
+provisioning; they invoke `runtime/esra_hook.py` cross-platform to record
+observational lifecycle events into `~/.gemini/antigravity/esra/events.jsonl`.
 [Google's schema and installation paths](https://antigravity.google/docs/plugins).
 
 ## Generic Agent Skills consumers
@@ -379,6 +400,6 @@ secrets or raw session identifiers are persisted.
 | xAI / Grok Web / Bot instructions | manual-upload | manual-replace / manual-replace | none | none | file guidance only; persistent Bot skills and ZIP import unverified |
 | Hermes / Agent / Desktop | git, local-path, release-zip, catalog-submission | manual-native / automatic-opt-in | native | local | native root/archive validation and registration; managed install/update/pin skipped: host package manager missing uv.lock |
 | OpenClaw / Gateway / CLI | git, local-path, release-zip, tarball, npm, catalog-submission | manual-native / manual-native | native | local | official-docs; package-contract-tested; live-integration-pending |
-| Google / Antigravity CLI / IDE / 2.0 custom | local-path, release-zip | manual-replace / manual-replace | native | local | official-docs; package-contract-tested; live-integration-pending |
+| Google / Antigravity CLI / IDE / 2.0 custom | local-path, git, release-zip | manual-replace / manual-replace | native | local | official-docs; package-contract-tested; live-integration-pending |
 | Agent Skills / Generic consumers | manual-upload, local-path, git | manual-replace / manual-replace | none | none | official-docs; package-contract-tested; live-integration-pending |
 <!-- distribution-matrix:end -->

@@ -28,8 +28,9 @@ Canonical host-neutral skills live in skills/. Host manifests and hooks remain
 at native discovery paths. Claude uses .claude-plugin/ and hooks/hooks.json;
 OpenAI uses adapters/openai/hooks.json. Hermes root plugin.yaml is synchronized
 from adapters/hermes/plugin/plugin.yaml and __init__.py delegates to its adapter.
-Antigravity hooks.json is canonical, but its closed native manifest is generated:
-the generic repository-root plugin.json is not a native Antigravity plugin.
+Antigravity hooks.json and root plugin.json provide native discovery for
+Git-based installs; distribution builds bundle a focused manifest alongside
+distribution.json.
 
 Use distributions/targets.json and INSTALL.md to select the exact host surface.
 Prefer host-managed Git/marketplace installations where supported. Stable follows

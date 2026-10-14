@@ -106,7 +106,7 @@ for the exact claim boundaries.
 | xAI / Grok Web / Bot instructions | manual-upload | manual-replace / manual-replace | none | none | file guidance only; persistent Bot skills and ZIP import unverified |
 | Hermes / Agent / Desktop | git, local-path, release-zip, catalog-submission | manual-native / automatic-opt-in | native | local | native root/archive validation and registration; managed install/update/pin skipped: host package manager missing uv.lock |
 | OpenClaw / Gateway / CLI | git, local-path, release-zip, tarball, npm, catalog-submission | manual-native / manual-native | native | local | official-docs; package-contract-tested; live-integration-pending |
-| Google / Antigravity CLI / IDE / 2.0 custom | local-path, release-zip | manual-replace / manual-replace | native | local | official-docs; package-contract-tested; live-integration-pending |
+| Google / Antigravity CLI / IDE / 2.0 custom | local-path, git, release-zip | manual-replace / manual-replace | native | local | official-docs; package-contract-tested; live-integration-pending |
 | Agent Skills / Generic consumers | manual-upload, local-path, git | manual-replace / manual-replace | none | none | official-docs; package-contract-tested; live-integration-pending |
 <!-- distribution-matrix:end -->
 Web-only clients receive the portable guidance available to them, not local

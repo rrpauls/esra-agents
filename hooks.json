@@ -3,13 +3,13 @@
     "PreInvocation": [
       {
         "type": "command",
-        "command": "python3 ./runtime/esra_hook.py --host antigravity --event PreInvocation > /dev/null; echo '{}'"
+        "command": "python3 ./runtime/esra_hook.py --host antigravity --event PreInvocation"
       }
     ],
     "Stop": [
       {
         "type": "command",
-        "command": "python3 ./runtime/esra_hook.py --host antigravity --event Stop > /dev/null; echo '{}'"
+        "command": "python3 ./runtime/esra_hook.py --host antigravity --event Stop"
       }
     ]
   }

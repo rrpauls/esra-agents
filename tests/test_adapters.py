@@ -72,6 +72,37 @@ class AdapterTests(unittest.TestCase):
                 self.assertEqual("command", handler.get("type", "command"))
                 self.assertIn("esra_hook.py", handler["command"])
                 self.assertIn("--host antigravity", handler["command"])
+                self.assertNotIn("echo", handler["command"])
+                self.assertNotIn("/dev/null", handler["command"])
+
+    def test_antigravity_hook_outputs_valid_json(self):
+        with tempfile.TemporaryDirectory() as directory:
+            payload = {"conversationId": "test-session", "stepIdx": 1}
+            process = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "runtime/esra_hook.py"),
+                    "--host", "antigravity", "--event", "PreInvocation",
+                    "--data-dir", directory,
+                ],
+                input=json.dumps(payload), text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(0, process.returncode)
+            self.assertEqual("{}\n", process.stdout)
+            self.assertEqual("", process.stderr)
+            durable = (Path(directory) / "events.jsonl").read_text()
+            record = json.loads(durable)
+            self.assertEqual("antigravity", record["host"])
+            self.assertEqual("PreInvocation", record["event"])
+
+    def test_antigravity_hook_malformed_input_outputs_valid_json(self):
+        process = subprocess.run(
+            [sys.executable, str(ROOT / "runtime/esra_hook.py"), "--host", "antigravity"],
+            input="invalid-json", text=True, capture_output=True, check=False,
+        )
+        self.assertEqual(0, process.returncode)
+        self.assertEqual("{}\n", process.stdout)
+        self.assertEqual("", process.stderr)
 
     def test_claude_root_hooks_are_valid_format(self):
         """Root hooks/hooks.json must be valid Claude Code hooks."""
