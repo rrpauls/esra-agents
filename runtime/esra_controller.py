@@ -137,9 +137,9 @@ def atomic_json(path: Path, value: Any) -> None:
 
 
 def read_json(path: Path, default: Any = None) -> Any:
+    refuse_symlink(path)
     if not path.exists():
         return default
-    refuse_symlink(path)
     with path.open(encoding="utf-8") as handle:
         return json.load(handle)
 
@@ -156,9 +156,9 @@ def append_jsonl(path: Path, value: dict[str, Any]) -> None:
 
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
+    refuse_symlink(path)
     if not path.exists():
         return []
-    refuse_symlink(path)
     rows: list[dict[str, Any]] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         try:
@@ -644,20 +644,20 @@ class Controller:
         root = secure_dir(self.skills_root)
         target = root / safe_id(candidate["target"], "target")
         refuse_symlink(target)
-        if target.exists() and any(path.is_symlink() for path in target.rglob("*")):
+        if any(path.is_symlink() for path in target.rglob("*")):
             raise ValueError(f"refusing skill tree containing symlink: {target}")
         return target
 
     @staticmethod
     def _live_revision(target: Path) -> str:
         live: dict[str, str] = {}
-        if not target.exists():
-            return digest(live)
         for path in sorted(target.rglob("*")):
             if path.is_symlink():
                 raise ValueError("live skill contains a symlink")
             if path.is_file():
                 live[path.relative_to(target).as_posix()] = path.read_text(encoding="utf-8")
+        if not target.exists() and not live:
+            return digest(live)
         return digest(live)
 
     def stage_external(self, candidate_id: str, revision_hash: str | None = None) -> dict[str, Any]:
