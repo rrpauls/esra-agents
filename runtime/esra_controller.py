@@ -137,9 +137,9 @@ def atomic_json(path: Path, value: Any) -> None:
 
 
 def read_json(path: Path, default: Any = None) -> Any:
+    refuse_symlink(path)
     if not path.exists():
         return default
-    refuse_symlink(path)
     with path.open(encoding="utf-8") as handle:
         return json.load(handle)
 
@@ -156,9 +156,9 @@ def append_jsonl(path: Path, value: dict[str, Any]) -> None:
 
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
+    refuse_symlink(path)
     if not path.exists():
         return []
-    refuse_symlink(path)
     rows: list[dict[str, Any]] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         try:
@@ -399,14 +399,17 @@ class Controller:
                 candidate_path = self.candidate_path(str(candidate_id))
             except ValueError:
                 candidate_path = None
-            if candidate_path and candidate_path.exists():
-                self._observe_canary(str(candidate_id), persisted)
+            if candidate_path:
+                refuse_symlink(candidate_path)
+                if candidate_path.exists():
+                    self._observe_canary(str(candidate_id), persisted)
         self.prune()
         return persisted
 
     def prune(self) -> None:
         cutoff = now() - timedelta(days=int(self.policy["evidence"]["retention_days"]))
         for path in (self.events_path, self.budget_events_path, self.reviews_path):
+            refuse_symlink(path)
             if not path.exists():
                 continue
             rows = [row for row in load_jsonl(path) if parse_time(row["timestamp"]) >= cutoff]
@@ -651,6 +654,8 @@ class Controller:
     @staticmethod
     def _live_revision(target: Path) -> str:
         live: dict[str, str] = {}
+        if target.is_symlink():
+            raise ValueError("live skill contains a symlink")
         if not target.exists():
             return digest(live)
         for path in sorted(target.rglob("*")):
