@@ -28,10 +28,10 @@ class SkillTests(unittest.TestCase):
         orchestrator = (ROOT / "skills/esra-orchestrator/SKILL.md").read_text()
         reflection = (ROOT / "skills/esra-reflection/SKILL.md").read_text()
         self.assertIn("every required consumer", orchestrator)
-        self.assertIn("\`PENDING\`", orchestrator)
+        self.assertIn("`PENDING`", orchestrator)
         self.assertIn("part of the *same* bounded review", orchestrator)
         self.assertIn("cross-host activation", reflection)
-        self.assertIn("\`PARTIAL\`", reflection)
+        self.assertIn("`PARTIAL`", reflection)
 
     def test_selective_invocation_and_no_recursion(self):
         orchestrator = (ROOT / "skills/esra-orchestrator/SKILL.md").read_text()
