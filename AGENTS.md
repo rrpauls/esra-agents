@@ -21,6 +21,10 @@ differences in `adapters/` and `distributions/`.
   promotion, or native host integration without current reproducible evidence.
 - Structural changes require a short proposal in `docs/oversight/` before code
   changes.
+- Do not treat a stored lesson, Git commit, or local ESRA receipt as
+  cross-host deployment. Before saying a policy/skill improvement is promoted,
+  verify every declared required target; report `PENDING`/`PARTIAL` and an
+  explicit handoff otherwise. Follow `docs/ARCHITECTURE.md` for the boundary.
 
 ## Host packaging and installation
 

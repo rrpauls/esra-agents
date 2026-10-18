@@ -24,7 +24,9 @@ Apply ESRA as a task-scoped workflow, not a background service or model-training
 2. Orient around the user's objective, constraints, and the highest-impact mismatch.
 3. Decide on at most two improvements with observable success criteria. Check scope and value alignment before experiments.
 4. Act only within the current authorization. For an analysis request, propose changes; do not implement them. For implementation, verify the selected change and summarize the result.
-5. Close with one lesson and the evidence needed to revisit it. If blocked or inconclusive, say so; do not manufacture progress.
+5. Close with one lesson and the evidence needed to revisit it. For durable improvements, distinguish **proposed**, **locally changed**, and **verified at every required consumer**. Name the intended scope, authoritative source, host/repository targets, propagation method, verification evidence, and remaining owner. Only call the change `PROMOTED` after checking all required destinations; otherwise report `PARTIAL` or `PENDING` and provide a bounded handoff. If blocked or inconclusive, say so; do not manufacture progress.
+
+Cross-host closure is part of the *same* bounded review, not a new ESRA cycle. A conversation memory, a Git commit, or an ESRA local promotion receipt does not prove an installed host loaded the updated skill or policy. The canonical ESRA specification owns lifecycle evidence, while an orchestration host owns ordinary model/effort routing.
 
 Load only a specialist that is genuinely needed: `esra-decisions` for trade-offs, `esra-experiments` for comparisons, `esra-reflection` for evidence integration, or `esra-crisis` for incidents. Resolve names in the host's current catalog; if absent, apply the relevant step directly. Do not require all four, delegate by default, or invoke legacy host-specific skills.
 

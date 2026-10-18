@@ -16,6 +16,7 @@ Reflect on observable work, not claims about consciousness or hidden internal st
 - Express the lesson as prior assumption → new evidence → revised working rule, with confidence and conditions that would reverse it.
 - Prefer one narrow correction over a new universal policy. Verify against both the failure case and a nearby case that should remain unchanged.
 - For evaluation-only requests, report a proposed update without editing. When updates are authorized, use the supported skill or project workflow and verify persistence before claiming it.
+- If the revised rule should affect multiple hosts, identify the **required** target files, installed skills/adapters, propagation owner, and observable verification for each. A memory entry, PR, commit, or local promotion receipt is not proof of cross-host activation. Report `PROMOTED` only after all required targets are verified; otherwise report `PARTIAL`/`PENDING`, the blocked scope, and the next authorized handoff. Do not enlarge the requested scope or imply installation occurred.
 
 Audit mode: inspect recorded cycles for recurring failure, untested promotions, missing feedback, repeated rereading, unnecessary tool calls, scope expansion, or reviews that create further reviews. Judge by task outcomes and user effort, not review length or self-assigned scores. Recommend simplifying or removing a step that provides no evidence of benefit.
 
