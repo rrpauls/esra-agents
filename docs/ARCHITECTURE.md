@@ -14,6 +14,18 @@ adapters/hermes/        native Hermes plugin, installer, and legacy-name map
 distributions/          generated host release artifacts
 ```
 
+## Improvement propagation boundary
+
+The [ESRA Promotion and Propagation Closure](https://github.com/rrpauls/esra/blob/main/docs/ESRA_Promotion_Closure.md)
+requires a target manifest and evidence for each required consuming host before
+claiming a workflow improvement is deployed. The portable skills
+`esra-orchestrator` and `esra-reflection` provide guidance only; they do not
+perform file installation or synchronize memory, host adapters, or releases.
+Existing revision-bound local controller receipts remain local evidence; they
+do not assert cross-host rollout. Record `PENDING`/`PARTIAL` honestly when
+access, authorization, or installation verification is missing. Host distribution
+and synchronization must be performed and tested separately.
+
 The specification remains in `rrpauls/esra`. A passing exporter benchmark
 proves only the portable data contract. Native discovery, hooks, permissions,
 and lifecycle behavior require current tests in each host.
