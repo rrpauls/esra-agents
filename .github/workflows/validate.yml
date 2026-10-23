@@ -36,7 +36,7 @@ jobs:
           (cd dist && sha256sum -c SHA256SUMS)
           .venv/bin/python scripts/verify_installations.py
       - name: Upload release candidates
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: esra-agents-distributions
           path: |
