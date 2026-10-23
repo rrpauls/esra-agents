@@ -647,7 +647,7 @@ class Controller:
         root = secure_dir(self.skills_root)
         target = root / safe_id(candidate["target"], "target")
         refuse_symlink(target)
-        if target.exists() and any(path.is_symlink() for path in target.rglob("*")):
+        if target.is_dir() and any(path.is_symlink() for path in target.rglob("*")):
             raise ValueError(f"refusing skill tree containing symlink: {target}")
         return target
 
