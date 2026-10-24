@@ -658,11 +658,14 @@ class Controller:
             raise ValueError("live skill contains a symlink")
         if not target.exists():
             return digest(live)
-        for path in sorted(target.rglob("*")):
-            if path.is_symlink():
-                raise ValueError("live skill contains a symlink")
-            if path.is_file():
-                live[path.relative_to(target).as_posix()] = path.read_text(encoding="utf-8")
+        if target.is_dir():
+            for path in sorted(target.rglob("*")):
+                if path.is_symlink():
+                    raise ValueError("live skill contains a symlink")
+                if path.is_file():
+                    live[path.relative_to(target).as_posix()] = path.read_text(encoding="utf-8")
+        elif target.is_file():
+            live[target.name] = target.read_text(encoding="utf-8")
         return digest(live)
 
     def stage_external(self, candidate_id: str, revision_hash: str | None = None) -> dict[str, Any]:

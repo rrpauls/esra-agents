@@ -339,7 +339,7 @@ def main() -> int:
                             break
                     if host == "hermes":
                         config = profile / ".hermes/config.yaml"
-                        if config.exists() and re.search(r"^\s*auto_apply:\s*(true|yes|on)\s*(?:#.*)?$", config.read_text(), re.M | re.I):
+                        if not config.is_symlink() and config.exists() and re.search(r"^\s*auto_apply:\s*(true|yes|on)\s*(?:#.*)?$", config.read_text(), re.M | re.I):
                             results.append({"host": host, "status": "FAIL", "detail": "installation silently enabled auto_apply"})
                 if not steps:
                     results.append({"host": host, "status": "SKIPPED", "detail": "no cold validator; use --install for isolated discovery"})
