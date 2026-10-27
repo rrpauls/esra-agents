@@ -656,7 +656,7 @@ class Controller:
         live: dict[str, str] = {}
         if target.is_symlink():
             raise ValueError("live skill contains a symlink")
-        if not target.exists():
+        if not target.is_dir():
             return digest(live)
         for path in sorted(target.rglob("*")):
             if path.is_symlink():
