@@ -435,13 +435,15 @@ class Controller:
                 continue
             snapshot_root = self.state / "snapshots" / candidate_path.stem
             refuse_symlink(snapshot_root)
-            if snapshot_root.exists():
+            if snapshot_root.is_dir():
                 for path in snapshot_root.rglob("*"):
                     refuse_symlink(path)
                 for path in sorted(snapshot_root.rglob("*"), reverse=True):
                     path.chmod(0o700 if path.is_dir() else 0o600)
                 snapshot_root.chmod(0o700)
                 shutil.rmtree(snapshot_root)
+            elif snapshot_root.is_file():
+                snapshot_root.unlink()
             candidate_path.unlink()
 
     def tick(self, agent_id: str, nightly: bool = False) -> dict[str, Any]:
@@ -656,7 +658,7 @@ class Controller:
         live: dict[str, str] = {}
         if target.is_symlink():
             raise ValueError("live skill contains a symlink")
-        if not target.exists():
+        if not target.is_dir():
             return digest(live)
         for path in sorted(target.rglob("*")):
             if path.is_symlink():
@@ -684,7 +686,7 @@ class Controller:
             snapshot = secure_dir(self.state / "snapshots" / candidate_id / revision_hash)
             refuse_linked_tree(snapshot)
             if not any(snapshot.iterdir()):
-                if target.exists():
+                if target.is_dir():
                     shutil.copytree(target, snapshot / "skill", symlinks=False)
                 else:
                     absent = snapshot / ".absent"
@@ -740,9 +742,9 @@ class Controller:
             snapshot = secure_dir(self.state / "snapshots" / candidate_id / revision_hash)
             refuse_linked_tree(snapshot)
             absent = snapshot / ".absent"
-            if target.exists() and not any(snapshot.iterdir()):
+            if target.is_dir() and not any(snapshot.iterdir()):
                 shutil.copytree(target, snapshot / "skill", symlinks=False)
-            elif not target.exists() and not any(snapshot.iterdir()):
+            elif not target.is_dir() and not any(snapshot.iterdir()):
                 absent.write_text("new skill\n", encoding="utf-8")
                 absent.chmod(0o400)
             stage = Path(tempfile.mkdtemp(prefix=f".{target.name}.esra-stage-", dir=target.parent))
@@ -761,11 +763,15 @@ class Controller:
                     if old.exists():
                         os.replace(old, target)
                     raise
-                if old.exists():
+                if old.is_dir():
                     shutil.rmtree(old)
+                elif old.is_file():
+                    old.unlink()
             finally:
-                if stage.exists():
+                if stage.is_dir():
                     shutil.rmtree(stage)
+                elif stage.is_file():
+                    stage.unlink()
             for path in sorted(snapshot.rglob("*"), reverse=True):
                 path.chmod(0o500 if path.is_dir() else 0o400)
             snapshot.chmod(0o500)
@@ -795,7 +801,7 @@ class Controller:
         with self.lock(candidate["agent_hash"]):
             replacement = Path(tempfile.mkdtemp(prefix=f".{target.name}.esra-rollback-", dir=target.parent))
             shutil.rmtree(replacement)
-            if (snapshot / "skill").exists():
+            if (snapshot / "skill").is_dir():
                 shutil.copytree(snapshot / "skill", replacement)
                 for path in sorted(replacement.rglob("*"), reverse=True):
                     path.chmod(0o700 if path.is_dir() else 0o600)
@@ -803,10 +809,12 @@ class Controller:
             old = target.parent / f".{target.name}.esra-quarantine-{uuid.uuid4().hex}"
             if target.exists():
                 os.replace(target, old)
-            if replacement.exists():
+            if replacement.is_dir() or replacement.is_file():
                 os.replace(replacement, target)
-            if old.exists():
+            if old.is_dir():
                 shutil.rmtree(old)
+            elif old.is_file():
+                old.unlink()
             self.transition(candidate, "rolled-back", reason)
             candidate["rollback_reason"] = reason
             self.save_candidate(candidate)
