@@ -10,3 +10,7 @@
 **Vulnerability:** A Denial of Service (DoS) or application crash could occur if a path targeted for a recursive glob (`path.rglob('*')`) turns out to be a file rather than a directory. `pathlib` raises a `NotADirectoryError` when this occurs.
 **Learning:** Checking `target.exists()` before `target.rglob()` is insufficient because it doesn't verify the path is a directory. If an attacker controls the target path, they could point it to an existing file, causing an unhandled exception and crashing the system.
 **Prevention:** Replace `path.exists()` with `path.is_dir()` before attempting to use `rglob()` to ensure the target is actually a directory.
+## 2024-11-13 - DoS via NotADirectoryError in directory operations
+**Vulnerability:** A Denial of Service (DoS) vulnerability occurs when using `iterdir()`, `shutil.rmtree()`, or `shutil.copytree()` on a path after only checking `path.exists()`. If the path is a file instead of a directory, a `NotADirectoryError` is raised.
+**Learning:** Checking `target.exists()` before performing directory-specific operations (like `iterdir`, `rmtree`, `copytree`) is insufficient because it does not verify that the path is actually a directory.
+**Prevention:** Replace `path.exists()` with `path.is_dir()` before performing directory-specific operations to ensure the path is actually a directory.
