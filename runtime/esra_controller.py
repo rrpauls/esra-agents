@@ -435,13 +435,15 @@ class Controller:
                 continue
             snapshot_root = self.state / "snapshots" / candidate_path.stem
             refuse_symlink(snapshot_root)
-            if snapshot_root.exists():
+            if snapshot_root.is_dir():
                 for path in snapshot_root.rglob("*"):
                     refuse_symlink(path)
                 for path in sorted(snapshot_root.rglob("*"), reverse=True):
                     path.chmod(0o700 if path.is_dir() else 0o600)
                 snapshot_root.chmod(0o700)
                 shutil.rmtree(snapshot_root)
+            elif snapshot_root.is_file():
+                snapshot_root.unlink()
             candidate_path.unlink()
 
     def tick(self, agent_id: str, nightly: bool = False) -> dict[str, Any]:
@@ -684,8 +686,10 @@ class Controller:
             snapshot = secure_dir(self.state / "snapshots" / candidate_id / revision_hash)
             refuse_linked_tree(snapshot)
             if not any(snapshot.iterdir()):
-                if target.exists():
+                if target.is_dir():
                     shutil.copytree(target, snapshot / "skill", symlinks=False)
+                elif target.exists():
+                    raise ValueError(f"refusing to stage non-directory target: {target}")
                 else:
                     absent = snapshot / ".absent"
                     absent.write_text("new skill\n", encoding="utf-8")
@@ -740,8 +744,10 @@ class Controller:
             snapshot = secure_dir(self.state / "snapshots" / candidate_id / revision_hash)
             refuse_linked_tree(snapshot)
             absent = snapshot / ".absent"
-            if target.exists() and not any(snapshot.iterdir()):
+            if target.is_dir() and not any(snapshot.iterdir()):
                 shutil.copytree(target, snapshot / "skill", symlinks=False)
+            elif target.exists() and not any(snapshot.iterdir()):
+                raise ValueError(f"refusing to promote non-directory target: {target}")
             elif not target.exists() and not any(snapshot.iterdir()):
                 absent.write_text("new skill\n", encoding="utf-8")
                 absent.chmod(0o400)
@@ -761,11 +767,15 @@ class Controller:
                     if old.exists():
                         os.replace(old, target)
                     raise
-                if old.exists():
+                if old.is_dir():
                     shutil.rmtree(old)
+                elif old.is_file():
+                    old.unlink()
             finally:
-                if stage.exists():
+                if stage.is_dir():
                     shutil.rmtree(stage)
+                elif stage.is_file():
+                    stage.unlink()
             for path in sorted(snapshot.rglob("*"), reverse=True):
                 path.chmod(0o500 if path.is_dir() else 0o400)
             snapshot.chmod(0o500)
@@ -805,8 +815,10 @@ class Controller:
                 os.replace(target, old)
             if replacement.exists():
                 os.replace(replacement, target)
-            if old.exists():
+            if old.is_dir():
                 shutil.rmtree(old)
+            elif old.is_file():
+                old.unlink()
             self.transition(candidate, "rolled-back", reason)
             candidate["rollback_reason"] = reason
             self.save_candidate(candidate)
