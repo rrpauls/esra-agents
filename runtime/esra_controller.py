@@ -658,7 +658,7 @@ class Controller:
         live: dict[str, str] = {}
         if target.is_symlink():
             raise ValueError("live skill contains a symlink")
-        if not target.exists():
+        if not target.is_dir():
             return digest(live)
         for path in sorted(target.rglob("*")):
             if path.is_symlink():
@@ -805,7 +805,7 @@ class Controller:
         with self.lock(candidate["agent_hash"]):
             replacement = Path(tempfile.mkdtemp(prefix=f".{target.name}.esra-rollback-", dir=target.parent))
             shutil.rmtree(replacement)
-            if (snapshot / "skill").exists():
+            if (snapshot / "skill").is_dir():
                 shutil.copytree(snapshot / "skill", replacement)
                 for path in sorted(replacement.rglob("*"), reverse=True):
                     path.chmod(0o700 if path.is_dir() else 0o600)
