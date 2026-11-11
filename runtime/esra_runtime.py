@@ -426,7 +426,7 @@ def command_experiment_decide(args: argparse.Namespace, base: Path) -> int:
 
 def command_experiment_list(_args: argparse.Namespace, base: Path) -> int:
     rows = []
-    for path in sorted((base / "experiments").glob("*.json")) if (base / "experiments").exists() else []:
+    for path in sorted((base / "experiments").glob("*.json")) if (base / "experiments").is_dir() else []:
         value = read_json(path, {})
         rows.append({key: value.get(key) for key in ("id", "status", "decision")})
     print(json.dumps(rows, sort_keys=True))
