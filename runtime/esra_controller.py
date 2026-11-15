@@ -117,8 +117,9 @@ def safe_relative(value: str) -> str:
 
 def refuse_linked_tree(root: Path) -> None:
     refuse_symlink(root)
-    for path in root.rglob("*"):
-        refuse_symlink(path)
+    if root.is_dir():
+        for path in root.rglob("*"):
+            refuse_symlink(path)
 
 
 def atomic_json(path: Path, value: Any) -> None:
