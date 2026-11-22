@@ -42,3 +42,4 @@ jobs:
           path: |
             dist/*.zip
             dist/SHA256SUMS
+          retention-days: 7
