@@ -1,0 +1,48 @@
+name: One-time Actions artifact cleanup
+
+on:
+  push:
+    paths:
+      - .github/workflows/cleanup-artifacts-once.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: cleanup-artifacts-once
+  cancel-in-progress: false
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Delete obsolete distribution artifacts only
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const all = await github.paginate(github.rest.actions.listArtifactsForRepo, {
+              owner, repo, per_page: 100
+            });
+            const matches = all
+              .filter(a => a.name === 'esra-agents-distributions' && !a.expired)
+              .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+            const keep = new Set(matches.slice(0, 5).map(a => a.id));
+            const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+            const obsolete = matches.filter(a =>
+              !keep.has(a.id) && Date.parse(a.created_at) < cutoff
+            );
+            core.info(`Matched ${matches.length} artifacts; preserving latest 5; deleting ${obsolete.length} older than 14 days.`);
+            let deleted = 0;
+            let bytes = 0;
+            for (const a of obsolete) {
+              await github.rest.actions.deleteArtifact({ owner, repo, artifact_id: a.id });
+              deleted += 1;
+              bytes += a.size_in_bytes;
+              core.info(`Deleted artifact ${a.id} (${a.name}), ${a.size_in_bytes} bytes`);
+            }
+            core.info(`Deleted ${deleted} artifacts; reclaimed approx ${(bytes / 1024 / 1024).toFixed(2)} MiB current artifact storage.`);
